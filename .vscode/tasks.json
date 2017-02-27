@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "tasks": [
+    {
+      "taskName": "test",
+      "command": "${workspaceRoot}/node_modules/.bin/gulp",
+      "args": [ "test" ],
+      "isShellCommand": true
+    },
+    {
+      "taskName": "build",
+      "command": "${workspaceRoot}/node_modules/.bin/gulp",
+      "args": [ "build" ],
+      "isShellCommand": true,
+      "problemMatcher": "$tsc"
+    },
+    {
+      "taskName": "watch",
+      "command": "${workspaceRoot}/node_modules/.bin/gulp",
+      "args": [ "watch" ],
+      "isShellCommand": true
+    }
+  ]
+}
