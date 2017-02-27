@@ -1,6 +1,6 @@
 {
   "name": "alexa-ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Alexa Typescript SDK",
   "description": "A lightweight framework for building Alexa skills.",
   "keywords": [
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dogfood20/alexa-ts"
+    "url": "https://github.com/o2Labs/alexa-ts"
   },
   "engines": {
     "node": "^4.3.2"
