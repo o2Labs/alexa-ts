@@ -22,7 +22,7 @@ describe('Creating pipes', () => {
     helpers.executeLambda(
       Alexa.Lambda.pipe([
         (event, next) => next(event),
-        (event) => Alexa.response('ExpectedState', { Say: { Text: 'Expected' } }),
+        (event) => Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState'),
       ]),
       {
         version: '1.0',
@@ -37,8 +37,8 @@ describe('Creating pipes', () => {
   it('can not execute next step', () =>
     helpers.executeLambda(
       Alexa.Lambda.pipe([
-        (event) => Alexa.response('ExpectedState', { Say: { Text: 'Expected' } }),
-        (event) => Alexa.response('OtherState', { Say: { Text: 'Not Expected' } }),
+        (event) => Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState'),
+        (event) => Alexa.response({ Say: { Text: 'Not Expected' } }, 'OtherState'),
       ]),
       {
         version: '1.0',
@@ -54,7 +54,7 @@ describe('Creating pipes', () => {
     helpers.executeLambda(
       Alexa.Lambda.pipe([
         (event, next) => Promise.resolve(next(event)),
-        (event) => Promise.resolve(Alexa.response('ExpectedState', { Say: { Text: 'Expected' } })),
+        (event) => Promise.resolve(Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState')),
       ]),
       {
         version: '1.0',

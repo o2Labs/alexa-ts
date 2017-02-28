@@ -161,12 +161,12 @@ const makeResponse = (response: Response<any>) : Types.Response => {
 
 const sessionStateKey = '_alexaTsState'
 
-export const response = <State>(state: State, response: Response<State>) : Types.ResponseBody => {
+export const response = <State>(response: Response<State>, previousState?: State) : Types.ResponseBody => {
   let sessionAttributes: any = {}
   if ('NewState' in response) {
     sessionAttributes[sessionStateKey] = response.NewState
-  } else if (typeof state !== 'undefined') {
-    sessionAttributes[sessionStateKey] = state
+  } else if (typeof previousState !== 'undefined') {
+    sessionAttributes[sessionStateKey] = previousState
   }
   return {
     version: '1.0',
@@ -205,7 +205,7 @@ const router = <State>(routes: Routes<State>) : Pipe => {
     switch (event.request.type) {
       case 'LaunchRequest':
         if ('Launch' in routes) {
-          return PromiseOrValue.map(routes.Launch(state, new Map<string, any>()), output => response(state, output))
+          return PromiseOrValue.map(routes.Launch(state, new Map<string, any>()), output => response(output, state))
         }
         break
       case 'SessionEndedRequest': // Special case - can't respond.
@@ -220,13 +220,13 @@ const router = <State>(routes: Routes<State>) : Pipe => {
         if (standardIntents.has(intentRequest.intent.name)) {
           const handler = standardIntents.get(intentRequest.intent.name)
           return PromiseOrValue.map(handler(state, slots),
-                 output => response(state, output))
+                 output => response(output, state))
         }
 
         if (customIntents.has(intentRequest.intent.name)) {
           const handler = customIntents.get(intentRequest.intent.name)
           return PromiseOrValue.map(handler(state, slots),
-                 output => response(state, output))
+                 output => response(output, state))
         }
     }
 
