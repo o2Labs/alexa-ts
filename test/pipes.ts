@@ -1,7 +1,7 @@
 // import 'mocha'
 import * as Alexa from '../src/index'
 import { assert } from 'chai'
-import * as helpers from '../src/testing'
+import { Session } from '../src/testing'
 
 describe('Creating pipes', () => {
   const expectedResult = {
@@ -19,65 +19,48 @@ describe('Creating pipes', () => {
   }
 
   it('can pass-through synchronously', () =>
-    helpers.executeLambda(
+    new Session(
       Alexa.Lambda.pipe([
         (event, next) => next(event),
         (event) => Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState'),
-      ]),
-      {
-        version: '1.0',
-        session: helpers.makeUnauthorisedSession(),
-        request: helpers.makeRequest(),
-      }
-    ).then((response) => {
+      ]))
+    .LaunchSkill().then((response) => {
       assert.deepEqual(response, expectedResult)
     })
   )
 
   it('can not execute next step', () =>
-    helpers.executeLambda(
+    new Session(
       Alexa.Lambda.pipe([
         (event) => Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState'),
         (event) => Alexa.response({ Say: { Text: 'Not Expected' } }, 'OtherState'),
-      ]),
-      {
-        version: '1.0',
-        session: helpers.makeUnauthorisedSession(),
-        request: helpers.makeRequest(),
-      }
-    ).then((response) => {
+      ]))
+    .LaunchSkill()
+    .then((response) => {
       assert.deepEqual(response, expectedResult)
     })
   )
 
   it('can pass-through asynchronously', () =>
-    helpers.executeLambda(
+    new Session(
       Alexa.Lambda.pipe([
         (event, next) => Promise.resolve(next(event)),
         (event) => Promise.resolve(Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState')),
-      ]),
-      {
-        version: '1.0',
-        session: helpers.makeUnauthorisedSession(),
-        request: helpers.makeRequest(),
-      }
-    ).then((response) =>
+      ]))
+    .LaunchSkill()
+    .then((response) =>
       assert.deepEqual(response, expectedResult)
     )
   )
 
   it('throws an error when unhandled', (done) => {
-    helpers.executeLambda(
+    new Session(
       Alexa.Lambda.pipe([
         (event, next) => next(event),
-      ]),
-      {
-        version: '1.0',
-        session: helpers.makeUnauthorisedSession(),
-        request: helpers.makeRequest(),
-      }
-    ).then((response) => done(new Error('No error thrown'))
-    ).catch((err) => {
+      ]))
+    .LaunchSkill()
+    .then((response) => done(new Error('No error thrown')))
+    .catch((err) => {
       try {
         assert.instanceOf(err, Error)
         assert.equal(err.message, 'Event unhandled')
