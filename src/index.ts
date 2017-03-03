@@ -268,7 +268,9 @@ export const Pipe = Object.freeze({
         return response
       })
     }
-  }
+  },
+
+  doNothing: () : Pipe => (event, next) => next(event),
 })
 
 export const Handler = Object.freeze({
