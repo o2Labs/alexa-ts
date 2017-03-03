@@ -21,11 +21,8 @@
   "engines": {
     "node": "^4.3.2"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/*"
-  ],
+  "main": "index.js",
+  "types": "index.d.ts",
   "license": "MIT",
   "scripts": {
     "test": "gulp test",

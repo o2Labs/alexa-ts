@@ -23,7 +23,7 @@ export const handler = Alexa.Lambda.pipe([
     ]
   }),
   () => // Unhandled requests
-    Alexa.response(null, {
+    Alexa.response({
       Say: { Text: 'Sorry, I didn\'t understand.' },
     }),
 ])
@@ -89,6 +89,6 @@ export const handler = Alexa.Lambda.handler(() =>
 ## Building & Publishing
 
 - Install Packages: `yarn`
-- Publish: `yarn publish`
+- Publish: `yarn publish dist`
 - Build & Test: `gulp build`
 - Rebuild on changes: `gulp watch`

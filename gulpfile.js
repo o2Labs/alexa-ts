@@ -4,7 +4,7 @@ const gulp = require('gulp')
 const del = require('del')
 const mocha = require('gulp-mocha')
 const ts = require('gulp-typescript')
-const tslint = require("gulp-tslint")
+const tslint = require('gulp-tslint')
 
 const buildSources = 'src/**/*.ts'
 const testSources = 'test/**/*.ts'
@@ -37,10 +37,16 @@ gulp.task('build-examples', ['lint'], () =>
 
 const srcTs = ts.createProject('src/tsconfig.json')
 
-gulp.task('build', ['clean', 'lint', 'test', 'build-examples'], () =>
+gulp.task('build-ts', ['clean', 'lint', 'test', 'build-examples'], () =>
   srcTs.src()
   .pipe(srcTs())
   .pipe(gulp.dest(buildDest)))
+
+gulp.task('copy-assets', ['clean'], () =>
+  gulp.src(['package.json', 'README.md', 'LICENCE.txt'])
+  .pipe(gulp.dest(buildDest)))
+
+gulp.task('build', ['build-ts', 'copy-assets'])
 
 gulp.task('watch', () =>
   gulp.watch([testSources, buildSources], ['test', 'lint']))
