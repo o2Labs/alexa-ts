@@ -1,5 +1,8 @@
 import * as Types from './json-types'
 
+/**
+ * Helpers to create various fake things for Alexa requests.
+ */
 export const Fake = Object.freeze({
   timestamp: () => new Date().toISOString(),
   userId: () => "amzn1.ask.account.FAKEACCOUNTID",
@@ -7,6 +10,9 @@ export const Fake = Object.freeze({
   sessionId: () => "amzn1.echo-api.session.bcea274f-0dd8-43ac-8369-e102f881b42e",
   applicationId: () => "amzn1.ask.skill.659a0b41-d887-45b0-a158-01b3d2214d5a",
 
+  /**
+   * Create a version 1.0 Alexa request
+   */
   requestBody: (session: Types.Session, request: Types.Request) : Types.RequestBody => ({
     version: '1.0',
     session: session,

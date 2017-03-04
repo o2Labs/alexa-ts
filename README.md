@@ -33,6 +33,7 @@ export const handler = Alexa.Lambda.pipe([
 
 - [The kitchen sink](examples/kitchen-sink.ts) - Shows off lots of the available features. ([JS version](examples/kitchen-sink.js))
 - [Guessing game](examples/guessing-game.ts) - demonstrates managing complex state. ([JS version](examples/guessing-game.js))
+- [Testing sessions](examples/testing.ts) - shows how to use the test helpers to test complex stories through a skill.
 
 ## Features
 
