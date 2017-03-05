@@ -72,3 +72,40 @@ describe('Creating pipes', () => {
   })
 
 })
+
+describe('Logging pipe', () => {
+
+  it('logs request and response', () => {
+    const logs = []
+    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const routes = {
+      InitialState: null,
+      Launch: () => ({
+        Say: { Text: 'Hello' }
+      })
+    }
+    return new Session(
+      Alexa.Lambda.pipe([
+        Alexa.Pipe.tracer(logger),
+        Alexa.Pipe.router(routes)
+      ]))
+      .LaunchSkill()
+      .then(() =>
+        assert.deepEqual(logs.map(log => log.message), [ 'Request:', 'Response:' ])
+      )
+  })
+
+  it('logs errors', () => {
+    const logs = []
+    const logger = (message, obj) => { logs.push({ message, obj }) }
+    return new Session(Alexa.Lambda.pipe([Alexa.Pipe.tracer(logger)]))
+      .LaunchSkill()
+      .then(() => { throw new Error('No exception raised') })
+      .catch((err) => {
+        const errorLog = logs.find(log => log.message === 'Error:')
+        assert.isDefined(errorLog, 'Should find log with message "Error:"')
+        assert.equal(errorLog.obj, err)
+      })
+  })
+
+})

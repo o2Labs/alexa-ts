@@ -262,11 +262,24 @@ export const Pipe = Object.freeze({
     }
     return (event, next) => {
       logger('Request:', event)
-      const result = next(event)
-      return PromiseOrValue.map(result, (response) => {
-        logger('Response:', response)
-        return response
-      })
+      try {
+        const result = next(event)
+        if (result instanceof Promise) {
+          return result.then((response) => {
+            logger('Response:', response)
+            return response
+          }).catch((error) => {
+            logger('Error:', error)
+            throw error
+          })
+        } else {
+          logger('Response:', result)
+          return result
+        }
+      } catch (error) {
+        logger('Error:', error)
+        throw error
+      }
     }
   },
 
