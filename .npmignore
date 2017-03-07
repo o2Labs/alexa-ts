@@ -1,0 +1,11 @@
+.nvmrc
+.gitignore
+.vscode
+.editorconfig
+*.json
+src/
+test/
+
+# Re-include custom ignores
+!/*.js
+!/*.d.ts
