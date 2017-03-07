@@ -1,3 +1,6 @@
+# v2.0.3
+- Use NPM for publishing - yarn is creating invalid packages :(
+
 # v2.0.2
 - Add change log.
 - Try to fix packaging again :/

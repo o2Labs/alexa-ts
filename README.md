@@ -89,7 +89,9 @@ export const handler = Alexa.Lambda.handler(() =>
 
 ## Building & Publishing
 
+Helpful commands:
+
 - Install Packages: `yarn`
-- Publish: `yarn publish dist`
+- Publish: `npm publish`
 - Build & Test: `gulp build`
 - Rebuild on changes: `gulp watch`
