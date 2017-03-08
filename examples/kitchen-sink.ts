@@ -5,7 +5,7 @@ type State = 'Started' | 'Other'
 const routes: Alexa.Routes<State> = { // Type-checked state management
   InitialState: 'Started',
   Launch: () =>
-    new Promise((resolve) => resolve({ // Can return promises
+    new Promise<Alexa.Response<State>>((resolve) => resolve({ // Can return promises
       Say: { Text: 'Hello world' }, // Low-ceremony responses
       NewState: 'Other' // Changing the state as part of the response
     })),

@@ -151,4 +151,81 @@ describe('Routing', () => {
     )
   })
 
+  describe('accessing the raw request', () => {
+    const startSession = () =>
+      new Session(Alexa.Lambda.router({
+        InitialState: '',
+        Launch: (state, slots, request) => {
+          if (request.session.user.accessToken) {
+            return {
+              Say: { Text: 'Logged in' }
+            }
+          } else {
+            return {
+              Say: { Text: 'Please log in' },
+              Card: { Type: 'LinkAccount' },
+            }
+          }
+        },
+      }))
+
+    it('detects non-logged in user', () =>
+      startSession()
+      .LaunchSkill()
+      .then((result) => {
+        assert.deepEqual(result.response, {
+          "outputSpeech": {
+            "type": "PlainText",
+            "text": "Please log in"
+          },
+          "shouldEndSession": false,
+          "card": {
+            "type": "LinkAccount"
+          }
+        })
+      })
+    )
+
+    it('detects logged-in user', () =>
+      startSession()
+      .LinkAccount('SomeAccessToken')
+      .LaunchSkill()
+      .then((result) => {
+        assert.deepEqual(result.response, {
+          "outputSpeech": {
+            "type": "PlainText",
+            "text": "Logged in"
+          },
+          "shouldEndSession": false,
+        })
+      })
+    )
+  })
+
+  it('can fall through to next step in pipe', () => {
+    return new Session(Alexa.Lambda.pipe([
+      // Step 1: router
+      Alexa.Pipe.router({
+        InitialState: '',
+        Launch: (state, slots, request, next) => {
+          return next(request)
+        },
+      }),
+      // Step 2: Catch-all handler
+      () => Alexa.response({
+        Say: { Text: 'Fall-through' },
+      }),
+    ]))
+    .LaunchSkill()
+    .then((result) => {
+      assert.deepEqual(result.response, {
+        "outputSpeech": {
+          "type": "PlainText",
+          "text": "Fall-through"
+        },
+        "shouldEndSession": false
+      })
+    })
+  })
+
 })

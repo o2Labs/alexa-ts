@@ -50,9 +50,11 @@ export interface Response<State> {
   EndSession?: boolean
 }
 
+export type HandlerResult<State> = PromiseOrValue<Response<State> | Types.ResponseBody | void>
+
 export type Slots = Map<string, any>
 
-export type IntentHandler<State> = (sessionState: State, slots: Slots) => PromiseOrValue<Response<State>>
+export type IntentHandler<State> = (sessionState: State, slots: Slots, request: Types.RequestBody, next: Handler) => HandlerResult<State>
 
 export interface StandardIntentRoutes<State> {
   /** Built-in AMAZON.CancelIntent. */
@@ -197,6 +199,17 @@ const slotsToMap = (slots) : Slots => {
   return map
 }
 
+const buildRequestIfNeeded = <State>(outputOrResponse: Response<State> | Types.ResponseBody, previousState: State) => {
+  if ('Say' in outputOrResponse) {
+    return response(outputOrResponse as Response<State>, previousState)
+  } else {
+    return outputOrResponse as Types.ResponseBody
+  }
+}
+
+const mapIntentResult = <State>(result: HandlerResult<State>, state: State) =>
+  PromiseOrValue.map(result, output => buildRequestIfNeeded(output, state))
+
 const router = <State>(routes: Routes<State>) : Pipe => {
   const standardIntents = handlerObjToMap(routes.Standard || {})
   const customIntents = new Map(routes.Custom || [])
@@ -205,7 +218,7 @@ const router = <State>(routes: Routes<State>) : Pipe => {
     switch (event.request.type) {
       case 'LaunchRequest':
         if ('Launch' in routes) {
-          return PromiseOrValue.map(routes.Launch(state, new Map<string, any>()), output => response(output, state))
+          return mapIntentResult(routes.Launch(state, new Map<string, any>(), event, next), state)
         }
         break
       case 'SessionEndedRequest': // Special case - can't respond.
@@ -219,14 +232,12 @@ const router = <State>(routes: Routes<State>) : Pipe => {
 
         if (standardIntents.has(intentRequest.intent.name)) {
           const handler = standardIntents.get(intentRequest.intent.name)
-          return PromiseOrValue.map(handler(state, slots),
-                 output => response(output, state))
+          return mapIntentResult(handler(state, slots, event, next), state)
         }
 
         if (customIntents.has(intentRequest.intent.name)) {
           const handler = customIntents.get(intentRequest.intent.name)
-          return PromiseOrValue.map(handler(state, slots),
-                 output => response(output, state))
+          return mapIntentResult(handler(state, slots, event, next), state)
         }
     }
 

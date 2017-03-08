@@ -1,3 +1,8 @@
+# 2.1.0
+- Add raw request argument to intent handlers.
+- Add support for forward piping from intent handlers.
+NOTE: Having made the IntentResult slightly more complex, TS type inference appears to be less reliable (see the kitchen-sink example change).
+
 # v2.0.3
 - Use NPM for publishing - yarn is creating invalid packages :(
 
