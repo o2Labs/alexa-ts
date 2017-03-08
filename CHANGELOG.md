@@ -1,3 +1,6 @@
+# 2.2.0
+- Expose function for reading state from request. This is helpful for when you’re writing your own middleware and you want to interrogate the state.
+
 # 2.1.0
 - Add raw request argument to intent handlers.
 - Add support for forward piping from intent handlers.

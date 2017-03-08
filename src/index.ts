@@ -161,19 +161,33 @@ const makeResponse = (response: Response<any>) : Types.Response => {
   return output
 }
 
-const sessionStateKey = '_alexaTsState'
+export const State = Object.freeze({
+  attributeKey: '_alexaTsState',
 
-export const response = <State>(response: Response<State>, previousState?: State) : Types.ResponseBody => {
+  fromRequest: <State>(request: Types.RequestBody, initialState?: State) => {
+    if (request && request.session && request.session.attributes && State.attributeKey in request.session.attributes) {
+      return request.session.attributes[State.attributeKey]
+    } else {
+      return initialState
+    }
+  },
+})
+
+const sessionAttributesFromResponse = <State>(response: Response<State>, previousState?: State) => {
   let sessionAttributes: any = {}
   if ('NewState' in response) {
-    sessionAttributes[sessionStateKey] = response.NewState
+    sessionAttributes[State.attributeKey] = response.NewState
   } else if (typeof previousState !== 'undefined') {
-    sessionAttributes[sessionStateKey] = previousState
+    sessionAttributes[State.attributeKey] = previousState
   }
+  return sessionAttributes
+}
+
+export const response = <State>(response: Response<State>, previousState?: State) : Types.ResponseBody => {
   return {
     version: '1.0',
     response: makeResponse(response),
-    sessionAttributes: sessionAttributes,
+    sessionAttributes: sessionAttributesFromResponse(response, previousState),
   }
 }
 
@@ -181,14 +195,6 @@ const handlerObjToMap = <State>(obj) => {
   const map = new Map<string, IntentHandler<State>>()
   Object.keys(obj).forEach(key => map.set(`AMAZON.${key}Intent`, obj[key]))
   return map
-}
-
-const getState = (event: Types.RequestBody) => {
-  if (event && event.session && event.session.attributes && sessionStateKey in event.session.attributes) {
-    return event.session.attributes[sessionStateKey]
-  } else {
-    return undefined
-  }
 }
 
 const slotsToMap = (slots) : Slots => {
@@ -214,7 +220,7 @@ const router = <State>(routes: Routes<State>) : Pipe => {
   const standardIntents = handlerObjToMap(routes.Standard || {})
   const customIntents = new Map(routes.Custom || [])
   return (event, next) => {
-    const state = getState(event) || routes.InitialState
+    const state = State.fromRequest(event, routes.InitialState)
     switch (event.request.type) {
       case 'LaunchRequest':
         if ('Launch' in routes) {
