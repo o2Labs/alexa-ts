@@ -43,7 +43,7 @@ export type Card = LinkAccount | {
 }
 
 export interface Response<State> {
-  Say: Speech
+  Say?: Speech
   NewState?: State
   Reprompt?: Speech
   Card?: Card
@@ -144,8 +144,11 @@ const makeCard = (card: Card) : Types.Card => {
 
 const makeResponse = (response: Response<any>) : Types.Response => {
   const output: Types.Response = {
-    outputSpeech: makeSpeech(response.Say),
     shouldEndSession: response.EndSession || false
+  }
+
+  if ('Say' in response) {
+    output.outputSpeech = makeSpeech(response.Say)
   }
 
   if ('Reprompt' in response) {
