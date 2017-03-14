@@ -98,12 +98,33 @@ describe('Logging pipe', () => {
   it('logs errors', () => {
     const logs = []
     const logger = (message, obj) => { logs.push({ message, obj }) }
-    return new Session(Alexa.Lambda.pipe([Alexa.Pipe.tracer(logger)]))
+    return new Session(Alexa.Lambda.pipe([
+      Alexa.Pipe.tracer(logger),
+      () => { throw new Error('Expected error') }
+    ]))
       .LaunchSkill()
       .then(() => { throw new Error('No exception raised') })
       .catch((err) => {
         const errorLog = logs.find(log => log.message === 'Error:')
         assert.isDefined(errorLog, 'Should find log with message "Error:"')
+        assert.equal(errorLog.obj.message, 'Expected error')
+        assert.equal(errorLog.obj, err)
+      })
+  })
+
+  it('logs errors from promises', () => {
+    const logs = []
+    const logger = (message, obj) => { logs.push({ message, obj }) }
+    return new Session(Alexa.Lambda.pipe([
+      Alexa.Pipe.tracer(logger),
+      () => Promise.reject(new Error('Expected error')),
+    ]))
+      .LaunchSkill()
+      .then(() => { throw new Error('No exception raised') })
+      .catch((err) => {
+        const errorLog = logs.find(log => log.message === 'Error:')
+        assert.isDefined(errorLog, 'Should find log with message "Error:"')
+        assert.equal(errorLog.obj.message, 'Expected error')
         assert.equal(errorLog.obj, err)
       })
   })
