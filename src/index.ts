@@ -312,7 +312,7 @@ export const Pipe = Object.freeze({
             logger('Response:', response)
             return response
           }).catch((error) => {
-            logger('Error:', error)
+            logger('Error:', error.toString())
             throw error
           })
         } else {
@@ -320,7 +320,7 @@ export const Pipe = Object.freeze({
           return result
         }
       } catch (error) {
-        logger('Error:', error)
+        logger('Error:', error.toString())
         throw error
       }
     }

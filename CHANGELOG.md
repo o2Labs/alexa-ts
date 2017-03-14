@@ -1,3 +1,6 @@
+# v2.3.1
+- Use `toString()` on Errors in the tracer pipe.
+
 # v2.3.0
 - Use PromiseLike interface instead of relying on using built in promise type.
 - Add then and catch functions to the module.

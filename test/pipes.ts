@@ -104,11 +104,10 @@ describe('Logging pipe', () => {
     ]))
       .LaunchSkill()
       .then(() => { throw new Error('No exception raised') })
-      .catch((err) => {
+      .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
         assert.isDefined(errorLog, 'Should find log with message "Error:"')
-        assert.equal(errorLog.obj.message, 'Expected error')
-        assert.equal(errorLog.obj, err)
+        assert.equal(errorLog.obj, 'Error: Expected error')
       })
   })
 
@@ -121,11 +120,10 @@ describe('Logging pipe', () => {
     ]))
       .LaunchSkill()
       .then(() => { throw new Error('No exception raised') })
-      .catch((err) => {
+      .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
         assert.isDefined(errorLog, 'Should find log with message "Error:"')
-        assert.equal(errorLog.obj.message, 'Expected error')
-        assert.equal(errorLog.obj, err)
+        assert.equal(errorLog.obj, 'Error: Expected error')
       })
   })
 
