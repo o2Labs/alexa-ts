@@ -1,3 +1,6 @@
+# v2.3.2
+- Fix detection of promises.
+
 # v2.3.1
 - Use `toString()` on Errors in the tracer pipe.
 

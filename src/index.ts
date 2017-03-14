@@ -2,10 +2,12 @@ import * as Types from './json-types'
 
 export type PromiseOrValue<T> = T | PromiseLike<T>
 
+const isPromise = obj => typeof obj.then === 'function'
+
 const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<any>) => {
   try {
     const result = action()
-    if (typeof result['then'] !== 'undefined') {
+    if (isPromise(result)) {
       return (result as PromiseLike<T>).then(onFulfilled, onRejected)
     } else {
       return onFulfilled(result)
@@ -21,7 +23,7 @@ const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => Promise
 
 export const PromiseOrValue = Object.freeze({
   map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) : PromiseOrValue<U> => {
-    if ('then' in promiseOrValue) {
+    if (isPromise(promiseOrValue)) {
       return (promiseOrValue as PromiseLike<T>).then(onFulfilled)
     } else {
       return onFulfilled(promiseOrValue)
@@ -307,11 +309,11 @@ export const Pipe = Object.freeze({
       logger('Request:', event)
       try {
         const result = next(event)
-        if (result instanceof Promise) {
-          return result.then((response) => {
+        if (isPromise(result)) {
+          return (result as PromiseLike<Types.ResponseBody>).then((response) => {
             logger('Response:', response)
             return response
-          }).catch((error) => {
+          }, (error) => {
             logger('Error:', error.toString())
             throw error
           })
@@ -337,17 +339,7 @@ export const Handler = Object.freeze({
 
 const lambdaFromHandler = (handler: Handler) : Types.AlexaLambda =>
   (event, context, callback) => {
-    try {
-      const promish = handler(event)
-      if (promish instanceof Promise) {
-        promish.then(data => callback(null, data))
-        .catch(callback)
-      } else {
-        callback(null, promish)
-      }
-    } catch (err) {
-      callback(err)
-    }
+    PromiseOrValue.then(() => handler(event), data => callback(null, data), callback)
   }
 
 export const Lambda = Object.freeze({
