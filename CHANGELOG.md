@@ -1,3 +1,7 @@
+# v2.3.0
+- Use PromiseLike interface instead of relying on using built in promise type.
+- Add then and catch functions to the module.
+
 # v2.2.1
 - Make the `Say` property on a response optional.
 

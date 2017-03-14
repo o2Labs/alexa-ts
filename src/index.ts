@@ -1,14 +1,37 @@
 import * as Types from './json-types'
 
-export type PromiseOrValue<T> = T | Promise<T>
+export type PromiseOrValue<T> = T | PromiseLike<T>
+
+const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<any>) => {
+  try {
+    const result = action()
+    if (typeof result['then'] !== 'undefined') {
+      return (result as PromiseLike<T>).then(onFulfilled, onRejected)
+    } else {
+      return onFulfilled(result)
+    }
+  } catch (err) {
+    if (typeof onRejected !== 'undefined') {
+      return onRejected(err)
+    } else {
+      throw err
+    }
+  }
+}
 
 export const PromiseOrValue = Object.freeze({
   map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) : PromiseOrValue<U> => {
-    if (promiseOrValue instanceof Promise) {
-      return promiseOrValue.then(onFulfilled)
+    if ('then' in promiseOrValue) {
+      return (promiseOrValue as PromiseLike<T>).then(onFulfilled)
     } else {
       return onFulfilled(promiseOrValue)
     }
+  },
+
+  then: then,
+
+  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => any) => {
+    return then(action, x => x, onRejected)
   }
 })
 
