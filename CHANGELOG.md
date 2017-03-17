@@ -1,3 +1,10 @@
+# v2.4.0
+- Add `Pipe.catch` for handling forward errors.
+- Don’t fail when neither `Text` or `SSML` is defined - just say nothing if no speech is defined.
+- Don’t bother freezing module objects.
+- Add default handling of `SessionEndedRequest` - just return void if not specified in routes.
+- Add basic documentation for modules and types.
+
 # v2.3.3
 - Fix bug with handling of undefined in PromiseOrValue
 

@@ -1,6 +1,6 @@
 {
   "name": "alexa-ts",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "displayName": "Alexa Typescript SDK",
   "description": "A lightweight framework for building Alexa skills.",
   "keywords": [
