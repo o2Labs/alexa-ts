@@ -57,9 +57,11 @@ export interface Intent {
   slots: any
 }
 
+export type SessionEndedReason = 'USER_INITIATED' | 'ERROR' | 'EXCEEDED_MAX_REPROMPTS'
+
 export interface SessionEndedRequest extends RequestBase {
   type: 'SessionEndedRequest'
-  reason: string
+  reason: SessionEndedReason
 }
 
 export interface RequestBase {

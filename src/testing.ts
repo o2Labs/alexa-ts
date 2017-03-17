@@ -35,6 +35,13 @@ export const Fake = Object.freeze({
     },
   }),
 
+  sessionEnded: (reason?: Types.SessionEndedReason) : Types.SessionEndedRequest => ({
+    type: 'SessionEndedRequest',
+    reason: reason || 'USER_INITIATED',
+    requestId: Fake.requestId(),
+    timeStamp: Fake.timestamp(),
+  }),
+
   session: () : Types.Session => ({
     sessionId: Fake.sessionId(),
     application: {
@@ -82,12 +89,14 @@ export const configure =
 export interface Builders {
   LaunchRequest?: () => Types.LaunchRequest
   IntentRequest?: (name: string, slots?) => Types.IntentRequest
+  SessionEndedRequest?: (reason?: Types.SessionEndedReason) => Types.SessionEndedRequest
   Session?: () => Types.Session
 }
 
 const defaultBuilders = () : Builders => ({
   LaunchRequest: Fake.launchRequest,
   IntentRequest: Fake.intentRequest,
+  SessionEndedRequest: Fake.sessionEnded,
   Session: Fake.session,
 })
 
@@ -136,10 +145,14 @@ export class Session {
     return this.Request(Fake.requestBody(this.session, this.builders.IntentRequest(name, slots)))
   }
 
+  EndSession (reason?: Types.SessionEndedReason) {
+    return this.Request(Fake.requestBody(this.session, this.builders.SessionEndedRequest(reason)))
+  }
+
   Request (request: Types.RequestBody) {
     return this.execute(request).then(response => {
       this.session.new = false
-      if (response.sessionAttributes && Object.getOwnPropertyNames(response.sessionAttributes).length > 0) {
+      if (response && response.sessionAttributes && Object.getOwnPropertyNames(response.sessionAttributes).length > 0) {
         this.session.attributes = response.sessionAttributes
       }
       return response

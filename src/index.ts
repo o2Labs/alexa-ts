@@ -314,7 +314,7 @@ const router = <State>(routes: Routes<State>) : Pipe => {
         if ('SessionEnded' in routes) {
           return routes.SessionEnded()
         }
-        break
+        return
       case 'IntentRequest':
         const intentRequest = event.request as Types.IntentRequest
         const slots = slotsToMap(intentRequest.intent.slots)
@@ -362,6 +362,8 @@ export const Pipe: PipeModule = {
         if (remainingHandlers.length === 0) {
           if (typeof next !== 'undefined') {
             return next(event)
+          } else {
+            throw new Error('Event unhandled')
           }
         } else {
           const nextHandler = remainingHandlers[0]

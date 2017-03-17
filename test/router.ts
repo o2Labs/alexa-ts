@@ -228,4 +228,15 @@ describe('Routing', () => {
     })
   })
 
+  it('returns void when no end session handler specified', () =>
+    new Session(Alexa.Lambda.pipe([
+      Alexa.Pipe.router({
+        InitialState: null,
+      }),
+      () => { throw new Error('Unhandled') },
+    ])).EndSession().then(resp => {
+      assert.isUndefined(resp)
+    })
+  )
+
 })
