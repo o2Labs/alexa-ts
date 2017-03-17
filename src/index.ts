@@ -301,6 +301,9 @@ export const Pipe = Object.freeze({
 
   router: router,
 
+  catch: (onError) : Pipe => (request, next) =>
+    PromiseOrValue.catch(() => next(request), onError),
+
   tracer: (logger?: (message: string, obj: any) => void) : Pipe => {
     if (typeof logger === 'undefined') {
       logger = (message, obj) => console.log(message, JSON.stringify(obj))
