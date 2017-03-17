@@ -181,7 +181,7 @@ const makeSpeech = (speech: Speech) : Types.OutputSpeech => {
       text: speech.Text
     }
   } else {
-    throw new Error('Speech contains neither text nor SSML.')
+    return undefined
   }
 }
 
@@ -215,12 +215,16 @@ const makeResponse = (response: Response<any>) : Types.Response => {
   }
 
   if ('Say' in response) {
-    output.outputSpeech = makeSpeech(response.Say)
+    const speech = makeSpeech(response.Say)
+    if (typeof speech !== 'undefined') {
+      output.outputSpeech = speech
+    }
   }
 
   if ('Reprompt' in response) {
-    output.reprompt = {
-      outputSpeech: makeSpeech(response.Reprompt)
+    const speech = makeSpeech(response.Reprompt)
+    if (typeof speech !== 'undefined') {
+      output.reprompt = { outputSpeech: speech }
     }
   }
 
