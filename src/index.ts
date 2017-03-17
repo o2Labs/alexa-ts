@@ -2,7 +2,7 @@ import * as Types from './json-types'
 
 export type PromiseOrValue<T> = T | PromiseLike<T>
 
-const isPromise = obj => typeof obj.then === 'function'
+const isPromise = obj => (typeof obj !== 'undefined') && typeof obj.then === 'function'
 
 const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<any>) => {
   try {

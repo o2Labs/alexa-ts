@@ -1,3 +1,6 @@
+# v2.3.3
+- Fix bug with handling of undefined in PromiseOrValue
+
 # v2.3.2
 - Fix detection of promises.
 

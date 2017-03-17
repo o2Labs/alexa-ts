@@ -9,10 +9,21 @@ describe('Promise or Value', () => {
     assert.equal(result, 'expected')
   })
 
+  it('Can "then" synchronously with undefined', () => {
+    const result = Alexa.PromiseOrValue.then(() => void(0), x => x)
+    assert.isUndefined(result)
+  })
+
   it('Can "then" asynchronously', () => {
     Alexa.PromiseOrValue
     .then(() => Promise.resolve('expected'), x => x)
     .then(result => assert.equal(result, 'expected'))
+  })
+
+  it('Can "then" asynchronously with undefined', () => {
+    Alexa.PromiseOrValue
+    .then(() => Promise.resolve(void(0)), x => x)
+    .then(result => assert.isUndefined(result))
   })
 
   it('Can "catch" synchronously', () => {
