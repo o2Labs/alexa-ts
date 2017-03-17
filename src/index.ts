@@ -4,7 +4,7 @@ export type PromiseOrValue<T> = T | PromiseLike<T>
 
 const isPromise = obj => (typeof obj !== 'undefined') && typeof obj.then === 'function'
 
-const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<any>) => {
+const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>): PromiseOrValue<U> => {
   try {
     const result = action()
     if (isPromise(result)) {
@@ -21,7 +21,17 @@ const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => Promise
   }
 }
 
-export const PromiseOrValue = Object.freeze({
+export interface PromiseOrValueModule {
+  /** Apply a transformation to the result of a promise or value */
+  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) => PromiseOrValue<U>
+  /** Attach callbacks for the resolution/rejection of the result of the action */
+  then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) => PromiseOrValue<U>
+  /** Handle errors thrown by the action */
+  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => T
+}
+
+/** Functions for when a result may be either synchronous (a value) or asynchronous (a `Promise`) */
+export const PromiseOrValue: PromiseOrValueModule = {
   map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) : PromiseOrValue<U> => {
     if (isPromise(promiseOrValue)) {
       return (promiseOrValue as PromiseLike<T>).then(onFulfilled)
@@ -32,18 +42,32 @@ export const PromiseOrValue = Object.freeze({
 
   then: then,
 
-  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => any) => {
+  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => {
     return then(action, x => x, onRejected)
   }
-})
+}
 
+/**
+ * An Alexa `Handler` takes a raw request and return a raw response either synchronously or asynchronously.
+ *
+ * _Only in the special case of the `SessionEnded` request, the response should be void._
+ */
 export type Handler =
   (event: Types.RequestBody) => PromiseOrValue<Types.ResponseBody | void>
 
+/**
+ * An Alexa Middleware `Pipe` is the same as the Alexa Handler with the addition of having the option of
+ * calling the next step in the pipe.
+ */
 export type Pipe =
   (event: Types.RequestBody, next: Handler) =>
     PromiseOrValue<Types.ResponseBody | void>
 
+/**
+ * The words to be spoken.
+ *
+ * _If `SSML` is specified, the `Text` will be ignored._
+ */
 export interface Speech {
   Text?: string
   SSML?: string
@@ -60,13 +84,26 @@ export interface CardImage {
   LargeUrl: string
 }
 
+/**
+ * Short-hand model for cards. _The `Type` can either be `LinkAccount` or `Card`._
+ *
+ * _This infers if the card is "Simple" or "Standard" based on the use of the `Image` property._
+ */
 export type Card = LinkAccount | {
   Type: 'Card'
+  /** Title of the card */
   Title: string
+  /**
+   * A string containing the text content.
+   *
+   * _New lines can be added with either `\n` or `\r\n`._
+   */
   Content: string
+  /** Optional image to be displayed */
   Image?: CardImage
 }
 
+/** Short-hand response from an intent or launch request */
 export interface Response<State> {
   Say?: Speech
   NewState?: State
@@ -77,6 +114,11 @@ export interface Response<State> {
 
 export type HandlerResult<State> = PromiseOrValue<Response<State> | Types.ResponseBody | void>
 
+/**
+ * Mapping of the `name` of the slot to the `value`.
+ *
+ * _This uses the `name` property, not the slot key._
+ */
 export type Slots = Map<string, any>
 
 export type IntentHandler<State> = (sessionState: State, slots: Slots, request: Types.RequestBody, next: Handler) => HandlerResult<State>
@@ -189,7 +231,15 @@ const makeResponse = (response: Response<any>) : Types.Response => {
   return output
 }
 
-export const State = Object.freeze({
+export interface StateModule {
+  /** The string key used to store state from AlexaTs in the Alexa session attributes */
+  attributeKey: string
+  /** Get the state (if available) from the request, otherwise return the initial state. */
+  fromRequest: <State>(request: Types.RequestBody, initialState?: State) => State
+}
+
+/** Functions for accessing raw AlexaTs state */
+export const State: StateModule = {
   attributeKey: '_alexaTsState',
 
   fromRequest: <State>(request: Types.RequestBody, initialState?: State) => {
@@ -199,7 +249,7 @@ export const State = Object.freeze({
       return initialState
     }
   },
-})
+}
 
 const sessionAttributesFromResponse = <State>(response: Response<State>, previousState?: State) => {
   let sessionAttributes: any = {}
@@ -211,6 +261,7 @@ const sessionAttributesFromResponse = <State>(response: Response<State>, previou
   return sessionAttributes
 }
 
+/** Expand a short-hand `Response` into a raw Alexa `ResponseBody` */
 export const response = <State>(response: Response<State>, previousState?: State) : Types.ResponseBody => {
   return {
     version: '1.0',
@@ -279,7 +330,28 @@ const router = <State>(routes: Routes<State>) : Pipe => {
   }
 }
 
-export const Pipe = Object.freeze({
+/** Functions for creating and composing middleware `Pipe`s */
+export interface PipeModule {
+  /** Create a pipe by calling a series of child pipes. */
+  join: (steps: Pipe[]) => Pipe
+
+  /** Handle specific request types and intents. */
+  router: <State>(routes: Routes<State>) => Pipe
+
+  /** Catch and handle errors from subsequent handlers. */
+  catch: (onError: ((error: any) => any)) => Pipe
+
+  /** Log the incoming request and the response or error thrown by the subsequent handlers. */
+  tracer: (logger?: (message: string, obj: any) => void) => Pipe
+
+  /** Just call the next step in the pipe. */
+  doNothing: () => Pipe
+
+  /** Convert a pipe into a handler. */
+  toHandler: (pipe: Pipe) => Handler
+}
+
+export const Pipe: PipeModule = {
   join: (steps: Pipe[]) : Pipe =>
     (event, next) => {
       const processNext = (remainingHandlers: Pipe[]) => (event) => {
@@ -332,21 +404,42 @@ export const Pipe = Object.freeze({
   },
 
   doNothing: () : Pipe => (event, next) => next(event),
-})
+}
 
-export const Handler = Object.freeze({
+/** Functions for creating an Alexa handler */
+export interface HandlerModule {
+  /** Create a handler from a middleware pipeline */
+  middleware: (pipe: Pipe) => Handler
+  /** Create a handler from request & intent routes */
+  router: <State>(routes: Routes<State>) => Handler
+  /** Create a handler from middleware pipeline steps */
+  pipe: (steps: Pipe[]) => Handler
+}
+
+export const Handler: HandlerModule = {
   middleware: Pipe.toHandler,
   router: <State>(routes: Routes<State>) : Handler => Pipe.toHandler(router(routes)),
   pipe: (steps: Pipe[]) : Handler => Pipe.toHandler(Pipe.join(steps)),
-})
+}
 
 const lambdaFromHandler = (handler: Handler) : Types.AlexaLambda =>
   (event, context, callback) => {
     PromiseOrValue.then(() => handler(event), data => callback(null, data), callback)
   }
 
-export const Lambda = Object.freeze({
+/** Functions for creating an AWS lambda handler */
+export interface LambdaModule {
+  /** Create a lambda handler from an Alexa Handler */
+  handler: (handler: Handler) => Types.AlexaLambda
+  /** Create a lambda handler from request & intent routes */
+  router: <State>(routes: Routes<State>) => Types.AlexaLambda
+  /** Create a lambda handler from a middleware pipeline */
+  pipe: (steps: Pipe[]) => Types.AlexaLambda
+}
+
+/** Functions for creating an AWS lambda handler */
+export const Lambda: LambdaModule = {
   handler: lambdaFromHandler,
   router: <State>(routes: Routes<State>) => lambdaFromHandler(Handler.router(routes)),
   pipe: (steps: Pipe[]) => lambdaFromHandler(Handler.pipe(steps))
-})
+}
