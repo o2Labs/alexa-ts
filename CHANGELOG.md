@@ -1,3 +1,6 @@
+# v2.4.1
+- Add support for newer node versions (by @bfsmith).
+
 # v2.4.0
 - Add `Pipe.catch` for handling forward errors.
 - Don’t fail when neither `Text` or `SSML` is defined - just say nothing if no speech is defined.
