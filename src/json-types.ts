@@ -1,6 +1,6 @@
 /// This file contains the requests and responses defined by Amazon Alexa's JSON Interface
 
-export type AlexaLambda = (event: RequestBody, context: Context, callback: (err, result?) => void) => any
+export type AlexaLambda = (event: RequestBody, context: Context, callback: (err: any, result?: any) => void) => any
 
 export interface Context {
   callbackWaitsForEmptyEventLoop: boolean

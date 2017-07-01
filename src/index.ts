@@ -23,9 +23,9 @@ const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => Promise
 
 export interface PromiseOrValueModule {
   /** Apply a transformation to the result of a promise or value */
-  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) => PromiseOrValue<U>
+  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T: any) => PromiseOrValue<U>) => PromiseOrValue<U>
   /** Attach callbacks for the resolution/rejection of the result of the action */
-  then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) => PromiseOrValue<U>
+  then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T: any) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) => PromiseOrValue<U>
   /** Handle errors thrown by the action */
   catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => T
 }
