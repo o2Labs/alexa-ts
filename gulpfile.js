@@ -31,7 +31,9 @@ const examplesTs = ts.createProject('examples/tsconfig.json')
 
 gulp.task('build-examples', ['lint'], () =>
   examplesTs.src()
-  .pipe(examplesTs())
+  .pipe(examplesTs({
+    typescript: require('typescript')
+  }))
   .pipe(gulp.dest('examples')))
 
 const srcTs = ts.createProject('src/tsconfig.json')

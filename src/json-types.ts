@@ -17,6 +17,7 @@ export interface RequestBody {
   version: string
   session: Session
   request: Request
+  context: RequestContext
 }
 
 export type Request = LaunchRequest | IntentRequest | SessionEndedRequest
@@ -27,6 +28,37 @@ export interface Session {
   attributes: any
   application: SessionApplication
   user: SessionUser
+}
+
+export interface RequestContext {
+  System: System
+  AudioPlayer: AudioPlayer
+}
+
+export interface System {
+  application: SessionApplication
+  user: SessionUser
+  device: SystemDevice
+  apiEndpoint: string
+}
+
+export interface SystemDevice {
+  deviceId: string
+  supportedInterfaces: SupportedInterfaces
+}
+
+export interface SupportedInterfaces {
+  [key: string]: any
+}
+
+export interface SessionApplication {
+  applicationId: string
+}
+
+export interface AudioPlayer {
+  token?: string
+  offsetInMilliseconds?: number
+  playerActivity: 'IDLE' | 'PAUSED' | 'PLAYING' | 'BUFFER_UNDERRUN' | 'FINISHED' | 'STOPPED'
 }
 
 export interface SessionApplication {

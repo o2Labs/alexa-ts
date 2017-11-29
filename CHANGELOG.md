@@ -1,3 +1,6 @@
+# v2.5.0
+- Add request context object to request body.
+
 # v2.4.1
 - Add support for newer node versions (by @bfsmith).
 
