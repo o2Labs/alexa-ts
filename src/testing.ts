@@ -13,10 +13,11 @@ export const Fake = Object.freeze({
   /**
    * Create a version 1.0 Alexa request
    */
-  requestBody: (session: Types.Session, request: Types.Request) : Types.RequestBody => ({
+  requestBody: (session: Types.Session, request: Types.Request, context: Types.RequestContext) : Types.RequestBody => ({
     version: '1.0',
     session: session,
     request: request,
+    context: context,
   }),
 
   launchRequest: () : Types.LaunchRequest => ({
@@ -55,6 +56,28 @@ export const Fake = Object.freeze({
     new: true,
   }),
 
+  requestContext: () : Types.RequestContext => ({
+    AudioPlayer: {
+      playerActivity: 'IDLE'
+    },
+    System: {
+      apiEndpoint: 'https://api.amazonalexa.com',
+      application: {
+        applicationId: Fake.applicationId(),
+      },
+      device: {
+        deviceId: "string",
+        supportedInterfaces: {
+          AudioPlayer: {}
+        },
+      },
+      user: {
+        userId: Fake.userId(),
+        accessToken: null,
+      }
+    },
+  }),
+
   lambdaContext: () : Types.Context => ({
     awsRequestId: 'e0aa9f2d-5f4a-4ae8-a7b9-bb1a79ed91f6',
     functionName: 'test-function',
@@ -91,6 +114,7 @@ export interface Builders {
   IntentRequest?: (name: string, slots?) => Types.IntentRequest
   SessionEndedRequest?: (reason?: Types.SessionEndedReason) => Types.SessionEndedRequest
   Session?: () => Types.Session
+  Context?: () => Types.RequestContext
 }
 
 const defaultBuilders = () : Builders => ({
@@ -98,6 +122,7 @@ const defaultBuilders = () : Builders => ({
   IntentRequest: Fake.intentRequest,
   SessionEndedRequest: Fake.sessionEnded,
   Session: Fake.session,
+  Context: Fake.requestContext,
 })
 
 const extendBuilders = (custom?: Builders) => {
@@ -120,6 +145,7 @@ export class Session {
   private execute: ExecuteRequest
   private session: Types.Session
   private builders: Builders
+  private context: Types.RequestContext
 
   /**
    * Start a new session
@@ -130,6 +156,8 @@ export class Session {
     this.execute = configure(lambda)
     this.builders = extendBuilders(builders)
     this.session = this.builders.Session()
+    this.context = this.builders.Context()
+    this.context.System.user = this.session.user
   }
 
   LinkAccount (accessToken: string) {
@@ -138,15 +166,15 @@ export class Session {
   }
 
   LaunchSkill () {
-    return this.Request(Fake.requestBody(this.session, this.builders.LaunchRequest()))
+    return this.Request(Fake.requestBody(this.session, this.builders.LaunchRequest(), this.context))
   }
 
   RequestIntent (name: string, slots?) {
-    return this.Request(Fake.requestBody(this.session, this.builders.IntentRequest(name, slots)))
+    return this.Request(Fake.requestBody(this.session, this.builders.IntentRequest(name, slots), this.context))
   }
 
   EndSession (reason?: Types.SessionEndedReason) {
-    return this.Request(Fake.requestBody(this.session, this.builders.SessionEndedRequest(reason)))
+    return this.Request(Fake.requestBody(this.session, this.builders.SessionEndedRequest(reason), this.context))
   }
 
   Request (request: Types.RequestBody) {

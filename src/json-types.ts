@@ -48,7 +48,7 @@ export interface SystemDevice {
 }
 
 export interface SupportedInterfaces {
-  [key: string]: object
+  [key: string]: any
 }
 
 export interface SessionApplication {
@@ -56,8 +56,8 @@ export interface SessionApplication {
 }
 
 export interface AudioPlayer {
-  token: string
-  offsetInMilliseconds: number
+  token?: string
+  offsetInMilliseconds?: number
   playerActivity: 'IDLE' | 'PAUSED' | 'PLAYING' | 'BUFFER_UNDERRUN' | 'FINISHED' | 'STOPPED'
 }
 
