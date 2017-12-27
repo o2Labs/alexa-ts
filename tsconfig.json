@@ -2,11 +2,11 @@
   "compilerOptions": {
     "target": "es2015",
     "module": "commonjs",
-    "inlineSourceMap": true,
     "lib": [
       "es5",
       "es6"
     ],
+    "pretty": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
