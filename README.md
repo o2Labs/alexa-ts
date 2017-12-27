@@ -93,5 +93,4 @@ Helpful commands:
 
 - Install Packages: `yarn`
 - Publish: `npm publish`
-- Build & Test: `yarn test`
-- Rebuild on changes: `gulp watch`
+- Build & Test: `yarn prepare`

@@ -26,17 +26,16 @@
   "license": "MIT",
   "scripts": {
     "format": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts'",
-    "test": "jest",
-    "prepare": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts' && jest && gulp build"
+    "clean": "rm -f examples/*.js *.js *.d.ts",
+    "test": "jest && tsc --noEmit",
+    "build": "yarn clean && tsc -p src/tsconfig.json && tsc -p examples/tsconfig.json",
+    "prepare": "yarn format && yarn test && yarn build"
   },
   "dependencies": {
     "@types/node": "^8.5.1"
   },
   "devDependencies": {
     "@types/jest": "^21.1.9",
-    "del": "^2.2.2",
-    "gulp": "~3.9.1",
-    "gulp-typescript": "^3.1.5",
     "jest": "^22.0.4",
     "prettier": "^1.9.2",
     "ts-jest": "^22.0.0",
