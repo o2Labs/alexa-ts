@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // import 'mocha'
 const Alexa = require("../src/index");
 const chai_1 = require("chai");

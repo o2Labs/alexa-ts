@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const Alexa = require("../src/index");
 const State = {
     startGuessing: () => ({

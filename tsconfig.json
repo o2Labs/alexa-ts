@@ -1,6 +1,23 @@
 {
   "compilerOptions": {
+    "target": "es2015",
     "module": "commonjs",
-    "target": "es2015"
-  }
+    "inlineSourceMap": true,
+    "lib": [
+      "es5",
+      "es6"
+    ],
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }
