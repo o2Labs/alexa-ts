@@ -15,14 +15,16 @@ describe('Promise or Value', () => {
   })
 
   it('Can "then" asynchronously', () => {
-    Alexa.PromiseOrValue
-    .then(() => Promise.resolve('expected'), x => x)
-    .then(result => assert.equal(result, 'expected'))
+    return Alexa.PromiseOrValue.asPromise(
+        Alexa.PromiseOrValue
+        .then(() => Promise.resolve('expected'), x => x))
+      .then(result => assert.equal(result, 'expected'))
   })
 
   it('Can "then" asynchronously with undefined', () => {
-    Alexa.PromiseOrValue
-    .then(() => Promise.resolve(void(0)), x => x)
+    return Alexa.PromiseOrValue.asPromise(
+      Alexa.PromiseOrValue
+      .then(() => Promise.resolve(void(0)), x => x))
     .then(result => assert.isUndefined(result))
   })
 
@@ -32,8 +34,9 @@ describe('Promise or Value', () => {
   })
 
   it('Can "catch" asynchronously', () => {
-    Alexa.PromiseOrValue
-    .then(() => Promise.reject(new Error('expected')), x => x, err => err.message)
+    return Alexa.PromiseOrValue.asPromise(
+      Alexa.PromiseOrValue
+      .then(() => Promise.reject(new Error('expected')), x => x, err => err.message))
     .then(result => assert.equal(result, 'expected'))
   })
 

@@ -2,9 +2,10 @@
 import * as Alexa from '../src/index'
 import { assert } from 'chai'
 import { Session } from '../src/testing'
+import { ResponseBody } from '../src/json-types'
 
 describe('Creating pipes', () => {
-  const expectedResult = {
+  const expectedResult: ResponseBody = {
     version: '1.0',
     response: {
       outputSpeech: {
@@ -76,8 +77,8 @@ describe('Creating pipes', () => {
 describe('Logging pipe', () => {
 
   it('logs request and response', () => {
-    const logs = []
-    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const logs: { message: string, obj: any }[] = []
+    const logger = (message: string, obj: any) => { logs.push({ message, obj }) }
     const routes = {
       InitialState: null,
       Launch: () => ({
@@ -96,8 +97,8 @@ describe('Logging pipe', () => {
   })
 
   it('logs errors', () => {
-    const logs = []
-    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const logs: { message: string, obj: any }[] = []
+    const logger = (message: string, obj: any) => { logs.push({ message, obj }) }
     return new Session(Alexa.Lambda.pipe([
       Alexa.Pipe.tracer(logger),
       () => { throw new Error('Expected error') }
@@ -106,14 +107,14 @@ describe('Logging pipe', () => {
       .then(() => { throw new Error('No exception raised') })
       .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
-        assert.isDefined(errorLog, 'Should find log with message "Error:"')
+        if (!errorLog) { throw new Error('Should find log with message "Error:"') }
         assert.equal(errorLog.obj, 'Error: Expected error')
       })
   })
 
   it('logs errors from promises', () => {
-    const logs = []
-    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const logs: { message: string, obj: any }[] = []
+    const logger = (message: string, obj: any) => { logs.push({ message, obj }) }
     return new Session(Alexa.Lambda.pipe([
       Alexa.Pipe.tracer(logger),
       () => Promise.reject(new Error('Expected error')),
@@ -122,7 +123,7 @@ describe('Logging pipe', () => {
       .then(() => { throw new Error('No exception raised') })
       .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
-        assert.isDefined(errorLog, 'Should find log with message "Error:"')
+        if (!errorLog) { throw new Error('Should find log with message "Error:"') }
         assert.equal(errorLog.obj, 'Error: Expected error')
       })
   })

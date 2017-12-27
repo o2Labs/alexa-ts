@@ -2,13 +2,19 @@
 # yarn lockfile v1
 
 
-"@types/chai@~3.4.35":
-  version "3.4.35"
-  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-3.4.35.tgz#e8d65f83492d2944f816fc620741821c28a8c900"
+"@types/chai@^3.5.2":
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-3.5.2.tgz#c11cd2817d3a401b7ba0f5a420f35c56139b1c1e"
 
-"@types/mocha@^2.2.39":
-  version "2.2.44"
-  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.44.tgz#1d4a798e53f35212fd5ad4d04050620171cd5b5e"
+"@types/mocha@^2.2.45":
+  version "2.2.45"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.45.tgz#816572b6e45164526a36d4faa123e8267d6d5d0a"
+  dependencies:
+    "@types/node" "*"
+
+"@types/node@*":
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.5.2.tgz#83b8103fa9a2c2e83d78f701a9aa7c9539739aa5"
 
 "@types/node@^8.5.1":
   version "8.5.1"

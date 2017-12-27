@@ -28,6 +28,8 @@ export interface PromiseOrValueModule {
   then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (value: T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) => PromiseOrValue<U>
   /** Handle errors thrown by the action */
   catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => PromiseOrValue<T>
+  /** Turn a promise or value into a promise */
+  asPromise: <T>(promiseOrValue: PromiseOrValue<T>) => PromiseLike<T>
 }
 
 /** Functions for when a result may be either synchronous (a value) or asynchronous (a `Promise`) */
@@ -45,6 +47,14 @@ export const PromiseOrValue: PromiseOrValueModule = {
 
   catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T): PromiseOrValue<T> => {
     return then(action, x => x, onRejected)
+  },
+
+  asPromise: <T>(promiseOrValue: PromiseOrValue<T>): PromiseLike<T> => {
+    if (isPromise(promiseOrValue)) {
+      return (promiseOrValue as PromiseLike<T>)
+    } else {
+      return Promise.resolve(promiseOrValue as T)
+    }
   }
 }
 
