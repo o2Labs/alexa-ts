@@ -1,6 +1,4 @@
-// import 'mocha'
 import * as Alexa from '../src/index'
-import { assert } from 'chai'
 import { Session } from '../src/testing'
 
 describe('testing helpers', () => {
@@ -19,11 +17,11 @@ describe('testing helpers', () => {
     return session
       .RequestIntent('AMAZON.NextIntent')
       .then((response) => {
-        assert.equal(response.sessionAttributes['_alexaTsState'], 1)
+        expect(response.sessionAttributes['_alexaTsState']).toEqual(1)
         return session.RequestIntent('AMAZON.NextIntent')
       })
       .then((response) => {
-        assert.equal(response.sessionAttributes['_alexaTsState'], 2)
+        expect(response.sessionAttributes['_alexaTsState']).toEqual(2)
         return session.RequestIntent('AMAZON.NextIntent')
       })
   })

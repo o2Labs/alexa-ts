@@ -2,25 +2,17 @@
 
 const gulp = require('gulp')
 const del = require('del')
-const mocha = require('gulp-mocha')
 const ts = require('gulp-typescript')
 const tslint = require('gulp-tslint')
 
 const buildSources = 'src/**/*.ts'
-const testSources = 'test/**/*.ts'
 const exampleSources = 'examples/**/*.ts'
 
 gulp.task('clean', () =>
   del(['*.js', '!gulpfile.js', '*.d.ts', 'examples/**/*.js']))
 
-gulp.task('test', () =>
-  gulp.src(testSources)
-  .pipe(mocha({
-    require: 'ts-node/register',
-  })))
-
 gulp.task('lint', () =>
-    gulp.src([buildSources, testSources, exampleSources])
+    gulp.src([buildSources, exampleSources])
         .pipe(tslint({
             formatter: "verbose"
         }))
@@ -38,10 +30,10 @@ gulp.task('build-examples', ['lint'], () =>
 
 const srcTs = ts.createProject('src/tsconfig.json')
 
-gulp.task('build', ['clean', 'lint', 'test', 'build-examples'], () =>
+gulp.task('build', ['clean', 'lint', 'build-examples'], () =>
   srcTs.src()
   .pipe(srcTs())
   .pipe(gulp.dest('.')))
 
 gulp.task('watch', () =>
-  gulp.watch([testSources, buildSources], ['test', 'lint']))
+  gulp.watch([buildSources], ['lint']))

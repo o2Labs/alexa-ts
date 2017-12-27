@@ -1,6 +1,4 @@
-// import 'mocha'
 import * as Alexa from '../src/index'
-import { assert } from 'chai'
 import { Session } from '../src/testing'
 import { ResponseBody } from '../src/json-types'
 
@@ -26,7 +24,7 @@ describe('Creating pipes', () => {
         (event) => Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState'),
       ]))
     .LaunchSkill().then((response) => {
-      assert.deepEqual(response, expectedResult)
+      expect(response).toEqual(expectedResult)
     })
   )
 
@@ -38,7 +36,7 @@ describe('Creating pipes', () => {
       ]))
     .LaunchSkill()
     .then((response) => {
-      assert.deepEqual(response, expectedResult)
+      expect(response).toEqual(expectedResult)
     })
   )
 
@@ -50,8 +48,8 @@ describe('Creating pipes', () => {
       ]))
     .LaunchSkill()
     .then((response) =>
-      assert.deepEqual(response, expectedResult)
-    )
+      expect(response).toEqual(expectedResult)
+  )
   )
 
   it('throws an error when unhandled', (done) => {
@@ -63,8 +61,8 @@ describe('Creating pipes', () => {
     .then((response) => done(new Error('No error thrown')))
     .catch((err) => {
       try {
-        assert.instanceOf(err, Error)
-        assert.equal(err.message, 'Event unhandled')
+        expect(err).toBeInstanceOf(Error)
+        expect(err.message).toEqual('Event unhandled')
         done()
       } catch (fail) {
         done(fail)
@@ -92,7 +90,7 @@ describe('Logging pipe', () => {
       ]))
       .LaunchSkill()
       .then(() =>
-        assert.deepEqual(logs.map(log => log.message), [ 'Request:', 'Response:' ])
+        expect(logs.map(log => log.message)).toEqual([ 'Request:', 'Response:' ])
       )
   })
 
@@ -108,7 +106,7 @@ describe('Logging pipe', () => {
       .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
         if (!errorLog) { throw new Error('Should find log with message "Error:"') }
-        assert.equal(errorLog.obj, 'Error: Expected error')
+        expect(errorLog.obj).toEqual('Error: Expected error')
       })
   })
 
@@ -124,7 +122,7 @@ describe('Logging pipe', () => {
       .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
         if (!errorLog) { throw new Error('Should find log with message "Error:"') }
-        assert.equal(errorLog.obj, 'Error: Expected error')
+        expect(errorLog.obj).toEqual('Error: Expected error')
       })
   })
 
