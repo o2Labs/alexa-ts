@@ -2,15 +2,15 @@ import * as Types from './json-types'
 
 export type PromiseOrValue<T> = T | PromiseLike<T>
 
-const isPromise = obj => (typeof obj !== 'undefined') && typeof obj.then === 'function'
+const isPromise = (obj: any) => (typeof obj !== 'undefined') && typeof obj.then === 'function'
 
-const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>): PromiseOrValue<U> => {
+const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (value: T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>): PromiseOrValue<U> => {
   try {
     const result = action()
     if (isPromise(result)) {
       return (result as PromiseLike<T>).then(onFulfilled, onRejected)
     } else {
-      return onFulfilled(result)
+      return onFulfilled(result as T)
     }
   } catch (err) {
     if (typeof onRejected !== 'undefined') {
@@ -23,26 +23,27 @@ const then = <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => Promise
 
 export interface PromiseOrValueModule {
   /** Apply a transformation to the result of a promise or value */
-  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) => PromiseOrValue<U>
+  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (value: T) => PromiseOrValue<U>) => PromiseOrValue<U>
   /** Attach callbacks for the resolution/rejection of the result of the action */
-  then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) => PromiseOrValue<U>
+  then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (value: T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) => PromiseOrValue<U>
   /** Handle errors thrown by the action */
-  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => T
+  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => PromiseOrValue<T>
 }
 
 /** Functions for when a result may be either synchronous (a value) or asynchronous (a `Promise`) */
 export const PromiseOrValue: PromiseOrValueModule = {
-  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (T) => PromiseOrValue<U>) : PromiseOrValue<U> => {
+  map: <T, U>(promiseOrValue: PromiseOrValue<T>, onFulfilled: (value: T) => PromiseOrValue<U>) : PromiseOrValue<U> => {
     if (isPromise(promiseOrValue)) {
       return (promiseOrValue as PromiseLike<T>).then(onFulfilled)
     } else {
-      return onFulfilled(promiseOrValue)
+      return onFulfilled(promiseOrValue as T)
     }
   },
 
-  then: then,
+  then: <T, U>(action: () => PromiseOrValue<T>, onFulfilled: (value: T) => PromiseOrValue<U>, onRejected?: (reason: any) => PromiseOrValue<U>) =>
+    then(action, onFulfilled, onRejected),
 
-  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T) => {
+  catch: <T>(action: () => PromiseOrValue<T>, onRejected: (reason: any) => T): PromiseOrValue<T> => {
     return then(action, x => x, onRejected)
   }
 }
@@ -169,7 +170,7 @@ export interface Routes<State> {
   Custom?: Iterable<[string, IntentHandler<State>]>
 }
 
-const makeSpeech = (speech: Speech) : Types.OutputSpeech => {
+const makeSpeech = (speech: Speech) : Types.OutputSpeech | undefined => {
   if (typeof speech.SSML !== 'undefined') {
     return {
       type: 'SSML',
@@ -190,7 +191,8 @@ const makeCard = (card: Card) : Types.Card => {
     return {
       type: 'LinkAccount',
     }
-  } else if ('Image' in card) {
+  }
+  if (card.Image !== undefined) {
     return {
       type: 'Standard',
       title: card.Title,
@@ -200,12 +202,11 @@ const makeCard = (card: Card) : Types.Card => {
         smallImageUrl: card.Image.SmallUrl,
       }
     }
-  } else {
-    return {
-      type: 'Simple',
-      title: card.Title,
-      content: card.Content,
-    }
+  }
+  return {
+    type: 'Simple',
+    title: card.Title,
+    content: card.Content,
   }
 }
 
@@ -214,21 +215,21 @@ const makeResponse = (response: Response<any>) : Types.Response => {
     shouldEndSession: response.EndSession || false
   }
 
-  if ('Say' in response) {
+  if (response.Say !== undefined) {
     const speech = makeSpeech(response.Say)
     if (typeof speech !== 'undefined') {
       output.outputSpeech = speech
     }
   }
 
-  if ('Reprompt' in response) {
+  if (response.Reprompt !== undefined) {
     const speech = makeSpeech(response.Reprompt)
     if (typeof speech !== 'undefined') {
       output.reprompt = { outputSpeech: speech }
     }
   }
 
-  if ('Card' in response) {
+  if (response.Card !== undefined) {
     output.card = makeCard(response.Card)
   }
 
@@ -274,13 +275,13 @@ export const response = <State>(response: Response<State>, previousState?: State
   }
 }
 
-const handlerObjToMap = <State>(obj) => {
+const handlerObjToMap = <State>(obj: any) => {
   const map = new Map<string, IntentHandler<State>>()
   Object.keys(obj).forEach(key => map.set(`AMAZON.${key}Intent`, obj[key]))
   return map
 }
 
-const slotsToMap = (slots) : Slots => {
+const slotsToMap = (slots: any) : Slots => {
   const map = new Map<string, any>()
   if (slots instanceof Object) {
     Object.keys(slots).forEach(key => map.set(slots[key].name, slots[key].value))
@@ -288,8 +289,11 @@ const slotsToMap = (slots) : Slots => {
   return map
 }
 
-const buildRequestIfNeeded = <State>(outputOrResponse: Response<State> | Types.ResponseBody, previousState: State) => {
-  if ('Say' in outputOrResponse) {
+const buildRequestIfNeeded = <State>(outputOrResponse: void | Response<State> | Types.ResponseBody, previousState: State) => {
+  if (typeof outputOrResponse !== 'object') {
+    return
+  }
+  if (outputOrResponse["Say"] !== undefined) {
     return response(outputOrResponse as Response<State>, previousState)
   } else {
     return outputOrResponse as Types.ResponseBody
@@ -306,12 +310,12 @@ const router = <State>(routes: Routes<State>) : Pipe => {
     const state = State.fromRequest(event, routes.InitialState)
     switch (event.request.type) {
       case 'LaunchRequest':
-        if ('Launch' in routes) {
+        if (routes.Launch !== undefined) {
           return mapIntentResult(routes.Launch(state, new Map<string, any>(), event, next), state)
         }
         break
       case 'SessionEndedRequest': // Special case - can't respond.
-        if ('SessionEnded' in routes) {
+        if (routes.SessionEnded !== undefined) {
           return routes.SessionEnded()
         }
         return
@@ -319,14 +323,15 @@ const router = <State>(routes: Routes<State>) : Pipe => {
         const intentRequest = event.request as Types.IntentRequest
         const slots = slotsToMap(intentRequest.intent.slots)
 
-        if (standardIntents.has(intentRequest.intent.name)) {
-          const handler = standardIntents.get(intentRequest.intent.name)
-          return mapIntentResult(handler(state, slots, event, next), state)
+        const standardHandler = standardIntents.get(intentRequest.intent.name)
+        if (standardHandler !== undefined) {
+          return mapIntentResult(standardHandler(state, slots, event, next), state)
         }
 
-        if (customIntents.has(intentRequest.intent.name)) {
+        const customHandler = customIntents.get(intentRequest.intent.name)
+        if (customHandler !== undefined) {
           const handler = customIntents.get(intentRequest.intent.name)
-          return mapIntentResult(handler(state, slots, event, next), state)
+          return mapIntentResult(customHandler(state, slots, event, next), state)
         }
     }
 
@@ -358,7 +363,7 @@ export interface PipeModule {
 export const Pipe: PipeModule = {
   join: (steps: Pipe[]) : Pipe =>
     (event, next) => {
-      const processNext = (remainingHandlers: Pipe[]) => (event) => {
+      const processNext = (remainingHandlers: Pipe[]) => (event: Types.RequestBody): PromiseOrValue<Types.ResponseBody | void> => {
         if (remainingHandlers.length === 0) {
           if (typeof next !== 'undefined') {
             return next(event)
@@ -383,27 +388,28 @@ export const Pipe: PipeModule = {
     PromiseOrValue.catch(() => next(request), onError),
 
   tracer: (logger?: (message: string, obj: any) => void) : Pipe => {
-    if (typeof logger === 'undefined') {
-      logger = (message, obj) => console.log(message, JSON.stringify(obj))
-    }
+    const log =
+      logger !== undefined
+      ? logger
+      : (message: string, obj: any) => console.log(message, JSON.stringify(obj))
     return (event, next) => {
-      logger('Request:', event)
+      log('Request:', event)
       try {
         const result = next(event)
         if (isPromise(result)) {
           return (result as PromiseLike<Types.ResponseBody>).then((response) => {
-            logger('Response:', response)
+            log('Response:', response)
             return response
           }, (error) => {
-            logger('Error:', error.toString())
+            log('Error:', error.toString())
             throw error
           })
         } else {
-          logger('Response:', result)
+          log('Response:', result)
           return result
         }
       } catch (error) {
-        logger('Error:', error.toString())
+        log('Error:', error.toString())
         throw error
       }
     }
