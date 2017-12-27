@@ -1,6 +1,10 @@
 /// This file contains the requests and responses defined by Amazon Alexa's JSON Interface
 
-export type AlexaLambda = (event: RequestBody, context: Context, callback: (err: any, result?: any) => void) => any
+export type AlexaLambda = (
+  event: RequestBody,
+  context: Context,
+  callback: (err: any, result?: any) => void,
+) => any
 
 export interface Context {
   callbackWaitsForEmptyEventLoop: boolean
@@ -58,7 +62,13 @@ export interface SessionApplication {
 export interface AudioPlayer {
   token?: string
   offsetInMilliseconds?: number
-  playerActivity: 'IDLE' | 'PAUSED' | 'PLAYING' | 'BUFFER_UNDERRUN' | 'FINISHED' | 'STOPPED'
+  playerActivity:
+    | 'IDLE'
+    | 'PAUSED'
+    | 'PLAYING'
+    | 'BUFFER_UNDERRUN'
+    | 'FINISHED'
+    | 'STOPPED'
 }
 
 export interface SessionApplication {
@@ -89,7 +99,10 @@ export interface Intent {
   slots: any
 }
 
-export type SessionEndedReason = 'USER_INITIATED' | 'ERROR' | 'EXCEEDED_MAX_REPROMPTS'
+export type SessionEndedReason =
+  | 'USER_INITIATED'
+  | 'ERROR'
+  | 'EXCEEDED_MAX_REPROMPTS'
 
 export interface SessionEndedRequest extends RequestBase {
   type: 'SessionEndedRequest'

@@ -25,8 +25,9 @@
   "types": "index.d.ts",
   "license": "MIT",
   "scripts": {
-    "test": "jest && gulp lint",
-    "prepublish": "jest && gulp build"
+    "format": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts'",
+    "test": "jest",
+    "prepare": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts' && jest && gulp build"
   },
   "dependencies": {
     "@types/node": "^8.5.1"
@@ -35,13 +36,11 @@
     "@types/jest": "^21.1.9",
     "del": "^2.2.2",
     "gulp": "~3.9.1",
-    "gulp-tslint": "^7.1.0",
     "gulp-typescript": "^3.1.5",
     "jest": "^22.0.4",
+    "prettier": "^1.9.2",
     "ts-jest": "^22.0.0",
     "ts-node": "^2.1.0",
-    "tslint": "^4.4.2",
-    "tslint-config-standard": "^4.0.0",
     "typescript": "^2.6.2"
   },
   "jest": {
