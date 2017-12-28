@@ -21,14 +21,14 @@
   "engines": {
     "node": ">=4.3.2"
   },
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "scripts": {
     "format": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts'",
-    "clean": "rm -f examples/*.js *.js *.d.ts",
+    "clean": "rm -rf dist",
     "test": "jest && tsc --noEmit",
-    "build": "yarn clean && tsc -p src/tsconfig.json && tsc -p examples/tsconfig.json",
+    "build": "yarn clean && tsc -p src/tsconfig.json",
     "prepare": "yarn format && yarn test && yarn build"
   },
   "dependencies": {
