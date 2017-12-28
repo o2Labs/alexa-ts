@@ -32,7 +32,7 @@ export const Fake = Object.freeze({
     timeStamp: Fake.timestamp(),
   }),
 
-  intentRequest: (intent: string, slots?): Types.IntentRequest => ({
+  intentRequest: (intent: string, slots?: any): Types.IntentRequest => ({
     type: 'IntentRequest',
     requestId: Fake.requestId(),
     timeStamp: Fake.timestamp(),
@@ -59,7 +59,6 @@ export const Fake = Object.freeze({
     attributes: {},
     user: {
       userId: Fake.userId(),
-      accessToken: null,
     },
     new: true,
   }),
@@ -81,7 +80,7 @@ export const Fake = Object.freeze({
       },
       user: {
         userId: Fake.userId(),
-        accessToken: null,
+        accessToken: undefined,
       },
     },
   }),
@@ -106,13 +105,12 @@ export const configure = (
   handler: Types.AlexaLambda,
   lambdaContext?: Types.Context,
 ): ExecuteRequest => {
-  if (typeof lambdaContext === 'undefined') {
-    lambdaContext = Fake.lambdaContext()
-  }
+  const lambdaContextOrDefault =
+    typeof lambdaContext === 'undefined' ? Fake.lambdaContext() : lambdaContext
 
   return request =>
     new Promise((resolve, reject) =>
-      handler(request, lambdaContext, (err, res) => {
+      handler(request, lambdaContextOrDefault, (err, res) => {
         if (err) {
           reject(err)
         } else {
@@ -123,13 +121,13 @@ export const configure = (
 }
 
 export interface Builders {
-  LaunchRequest?: () => Types.LaunchRequest
-  IntentRequest?: (name: string, slots?) => Types.IntentRequest
-  SessionEndedRequest?: (
+  LaunchRequest: () => Types.LaunchRequest
+  IntentRequest: (name: string, slots?: any) => Types.IntentRequest
+  SessionEndedRequest: (
     reason?: Types.SessionEndedReason,
   ) => Types.SessionEndedRequest
-  Session?: () => Types.Session
-  Context?: () => Types.RequestContext
+  Session: () => Types.Session
+  Context: () => Types.RequestContext
 }
 
 const defaultBuilders = (): Builders => ({
@@ -140,7 +138,7 @@ const defaultBuilders = (): Builders => ({
   Context: Fake.requestContext,
 })
 
-const extendBuilders = (custom?: Builders) => {
+const extendBuilders = (custom?: Partial<Builders>): Builders => {
   const builders = defaultBuilders()
   if (typeof custom === 'undefined') {
     return builders
@@ -167,7 +165,7 @@ export class Session {
    * @param lambda Alexa lambda function to test.
    * @param builders Optional custom builders to be used.
    */
-  constructor(lambda: Types.AlexaLambda, builders?: Builders) {
+  constructor(lambda: Types.AlexaLambda, builders?: Partial<Builders>) {
     this.execute = configure(lambda)
     this.builders = extendBuilders(builders)
     this.session = this.builders.Session()
@@ -190,7 +188,7 @@ export class Session {
     )
   }
 
-  RequestIntent(name: string, slots?) {
+  RequestIntent(name: string, slots?: any) {
     return this.Request(
       Fake.requestBody(
         this.session,

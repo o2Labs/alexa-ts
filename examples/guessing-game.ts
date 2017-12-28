@@ -114,9 +114,9 @@ const routes: Alexa.Routes<State> = {
   ],
 }
 
-const unhandled = () => Alexa.response(null, {
+const unhandled = () => Alexa.response({
   Say: { Text: 'Sorry, I didn\'t get that, try saying a number.' }
-})
+}, null)
 
 export const handler = Alexa.Lambda.pipe([ // To host in AWS lambda
   Alexa.Pipe.tracer(),

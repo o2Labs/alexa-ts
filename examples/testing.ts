@@ -1,6 +1,4 @@
-// import 'mocha'
 import * as Alexa from '../src/index'
-import { assert } from 'chai'
 import { Session } from '../src/testing'
 
 describe('counting skill', () => {
@@ -29,7 +27,7 @@ describe('counting skill', () => {
       }).then((response) =>
 
         // Session state is maintained.
-        assert.equal(response.sessionAttributes['_alexaTsState'], 2)
+        expect(response.sessionAttributes['_alexaTsState']).toEqual(2)
 
       )
   })

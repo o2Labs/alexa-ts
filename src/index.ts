@@ -400,7 +400,6 @@ const router = <State>(routes: Routes<State>): Pipe => {
 
         const customHandler = customIntents.get(intentRequest.intent.name)
         if (customHandler !== undefined) {
-          const handler = customIntents.get(intentRequest.intent.name)
           return mapIntentResult(
             customHandler(state, slots, event, next),
             state,

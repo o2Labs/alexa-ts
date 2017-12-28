@@ -77,7 +77,7 @@ export interface SessionApplication {
 
 export interface SessionUser {
   userId: string
-  accessToken: string
+  accessToken?: string
 }
 
 export interface LaunchRequest extends RequestBase {

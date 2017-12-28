@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import 'mocha'
 const Alexa = require("../src/index");
-const chai_1 = require("chai");
 const testing_1 = require("../src/testing");
 describe('counting skill', () => {
     const handler = Alexa.Lambda.router({
@@ -24,6 +22,6 @@ describe('counting skill', () => {
             return session.RequestIntent('AMAZON.NextIntent');
         }).then((response) => 
         // Session state is maintained.
-        chai_1.assert.equal(response.sessionAttributes['_alexaTsState'], 2));
+        expect(response.sessionAttributes['_alexaTsState']).toEqual(2));
     });
 });

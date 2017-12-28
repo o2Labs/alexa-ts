@@ -107,9 +107,9 @@ const routes = {
             }],
     ],
 };
-const unhandled = () => Alexa.response(null, {
+const unhandled = () => Alexa.response({
     Say: { Text: 'Sorry, I didn\'t get that, try saying a number.' }
-});
+}, null);
 exports.handler = Alexa.Lambda.pipe([
     Alexa.Pipe.tracer(),
     Alexa.Pipe.router(routes),
