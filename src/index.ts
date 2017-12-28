@@ -5,81 +5,60 @@ export type PromiseOrValue<T> = T | PromiseLike<T>
 const isPromise = (obj: any) =>
   typeof obj !== 'undefined' && typeof obj.then === 'function'
 
-const then = <T, U>(
-  action: () => PromiseOrValue<T>,
-  onFulfilled: (value: T) => PromiseOrValue<U>,
-  onRejected?: (reason: any) => PromiseOrValue<U>,
-): PromiseOrValue<U> => {
-  try {
-    const result = action()
-    if (isPromise(result)) {
-      return (result as PromiseLike<T>).then(onFulfilled, onRejected)
-    } else {
-      return onFulfilled(result as T)
-    }
-  } catch (err) {
-    if (typeof onRejected !== 'undefined') {
-      return onRejected(err)
-    } else {
-      throw err
-    }
-  }
-}
-
-export interface PromiseOrValueModule {
-  /** Apply a transformation to the result of a promise or value */
-  map: <T, U>(
-    promiseOrValue: PromiseOrValue<T>,
-    onFulfilled: (value: T) => PromiseOrValue<U>,
-  ) => PromiseOrValue<U>
-  /** Attach callbacks for the resolution/rejection of the result of the action */
-  then: <T, U>(
-    action: () => PromiseOrValue<T>,
-    onFulfilled: (value: T) => PromiseOrValue<U>,
-    onRejected?: (reason: any) => PromiseOrValue<U>,
-  ) => PromiseOrValue<U>
-  /** Handle errors thrown by the action */
-  catch: <T>(
-    action: () => PromiseOrValue<T>,
-    onRejected: (reason: any) => T,
-  ) => PromiseOrValue<T>
-  /** Turn a promise or value into a promise */
-  asPromise: <T>(promiseOrValue: PromiseOrValue<T>) => PromiseLike<T>
-}
-
 /** Functions for when a result may be either synchronous (a value) or asynchronous (a `Promise`) */
-export const PromiseOrValue: PromiseOrValueModule = {
-  map: <T, U>(
+export namespace PromiseOrValue {
+  /** Apply a transformation to the result of a promise or value */
+  export function map<T, U>(
     promiseOrValue: PromiseOrValue<T>,
     onFulfilled: (value: T) => PromiseOrValue<U>,
-  ): PromiseOrValue<U> => {
+  ): PromiseOrValue<U> {
     if (isPromise(promiseOrValue)) {
       return (promiseOrValue as PromiseLike<T>).then(onFulfilled)
     } else {
       return onFulfilled(promiseOrValue as T)
     }
-  },
+  }
 
-  then: <T, U>(
+  /** Attach callbacks for the resolution/rejection of the result of the action */
+  export function then<T, U>(
     action: () => PromiseOrValue<T>,
     onFulfilled: (value: T) => PromiseOrValue<U>,
     onRejected?: (reason: any) => PromiseOrValue<U>,
-  ) => then(action, onFulfilled, onRejected),
+  ): PromiseOrValue<U> {
+    try {
+      const result = action()
+      if (isPromise(result)) {
+        return (result as PromiseLike<T>).then(onFulfilled, onRejected)
+      } else {
+        return onFulfilled(result as T)
+      }
+    } catch (err) {
+      if (typeof onRejected !== 'undefined') {
+        return onRejected(err)
+      } else {
+        throw err
+      }
+    }
+  }
 
-  catch: <T>(
+  /** Handle errors thrown by the action */
+  export function catchErr<T>(
     action: () => PromiseOrValue<T>,
     onRejected: (reason: any) => T,
-  ): PromiseOrValue<T> => {
+  ): PromiseOrValue<T> {
     return then(action, x => x, onRejected)
-  },
+  }
 
-  asPromise: <T>(promiseOrValue: PromiseOrValue<T>): PromiseLike<T> => {
+  /** Turn a promise or value into a promise */
+  export function asPromise<T>(
+    promiseOrValue: PromiseOrValue<T>,
+  ): PromiseLike<T> {
     if (isPromise(promiseOrValue)) {
       return promiseOrValue as PromiseLike<T>
     } else {
       return Promise.resolve(promiseOrValue as T)
     }
-  },
+  }
 }
 
 /**
@@ -281,21 +260,16 @@ const makeResponse = (response: Response<any>): Types.Response => {
   return output
 }
 
-export interface StateModule {
-  /** The string key used to store state from AlexaTs in the Alexa session attributes */
-  attributeKey: string
-  /** Get the state (if available) from the request, otherwise return the initial state. */
-  fromRequest: <State>(
-    request: Types.RequestBody,
-    initialState?: State,
-  ) => State
-}
-
 /** Functions for accessing raw AlexaTs state */
-export const State: StateModule = {
-  attributeKey: '_alexaTsState',
+export namespace State {
+  /** The string key used to store state from AlexaTs in the Alexa session attributes */
+  export const attributeKey = '_alexaTsState'
 
-  fromRequest: <State>(request: Types.RequestBody, initialState?: State) => {
+  /** Get the state (if available) from the request, otherwise return the initial state. */
+  export function fromRequest<State>(
+    request: Types.RequestBody,
+    initialState: State,
+  ): State {
     if (
       request &&
       request.session &&
@@ -306,7 +280,7 @@ export const State: StateModule = {
     } else {
       return initialState
     }
-  },
+  }
 }
 
 const sessionAttributesFromResponse = <State>(
@@ -367,73 +341,10 @@ const buildRequestIfNeeded = <State>(
 const mapIntentResult = <State>(result: HandlerResult<State>, state: State) =>
   PromiseOrValue.map(result, output => buildRequestIfNeeded(output, state))
 
-const router = <State>(routes: Routes<State>): Pipe => {
-  const standardIntents = handlerObjToMap(routes.Standard || {})
-  const customIntents = new Map(routes.Custom || [])
-  return (event, next) => {
-    const state = State.fromRequest(event, routes.InitialState)
-    switch (event.request.type) {
-      case 'LaunchRequest':
-        if (routes.Launch !== undefined) {
-          return mapIntentResult(
-            routes.Launch(state, new Map<string, any>(), event, next),
-            state,
-          )
-        }
-        break
-      case 'SessionEndedRequest': // Special case - can't respond.
-        if (routes.SessionEnded !== undefined) {
-          return routes.SessionEnded()
-        }
-        return
-      case 'IntentRequest':
-        const intentRequest = event.request as Types.IntentRequest
-        const slots = slotsToMap(intentRequest.intent.slots)
-
-        const standardHandler = standardIntents.get(intentRequest.intent.name)
-        if (standardHandler !== undefined) {
-          return mapIntentResult(
-            standardHandler(state, slots, event, next),
-            state,
-          )
-        }
-
-        const customHandler = customIntents.get(intentRequest.intent.name)
-        if (customHandler !== undefined) {
-          return mapIntentResult(
-            customHandler(state, slots, event, next),
-            state,
-          )
-        }
-    }
-
-    return next(event)
-  }
-}
-
 /** Functions for creating and composing middleware `Pipe`s */
-export interface PipeModule {
+export namespace Pipe {
   /** Create a pipe by calling a series of child pipes. */
-  join: (steps: Pipe[]) => Pipe
-
-  /** Handle specific request types and intents. */
-  router: <State>(routes: Routes<State>) => Pipe
-
-  /** Catch and handle errors from subsequent handlers. */
-  catch: (onError: ((error: any) => any)) => Pipe
-
-  /** Log the incoming request and the response or error thrown by the subsequent handlers. */
-  tracer: (logger?: (message: string, obj: any) => void) => Pipe
-
-  /** Just call the next step in the pipe. */
-  doNothing: () => Pipe
-
-  /** Convert a pipe into a handler. */
-  toHandler: (pipe: Pipe) => Handler
-}
-
-export const Pipe: PipeModule = {
-  join: (steps: Pipe[]): Pipe => (event, next) => {
+  export const join = (steps: Pipe[]): Pipe => (event, next) => {
     const processNext = (remainingHandlers: Pipe[]) => (
       event: Types.RequestBody,
     ): PromiseOrValue<Types.ResponseBody | void> => {
@@ -450,19 +361,69 @@ export const Pipe: PipeModule = {
       }
     }
     return processNext(steps)(event)
-  },
+  }
 
-  toHandler: (pipe: Pipe): Handler => event =>
+  /** Convert a pipe into a handler. */
+  export const toHandler = (pipe: Pipe): Handler => event =>
     pipe(event, () => {
       throw new Error('Event unhandled')
-    }),
+    })
 
-  router: router,
+  /** Handle specific request types and intents. */
+  export const router = <State>(routes: Routes<State>): Pipe => {
+    const standardIntents = handlerObjToMap(routes.Standard || {})
+    const customIntents = new Map(routes.Custom || [])
+    return (event, next) => {
+      const state = State.fromRequest(event, routes.InitialState)
+      switch (event.request.type) {
+        case 'LaunchRequest':
+          if (routes.Launch !== undefined) {
+            return mapIntentResult(
+              routes.Launch(state, new Map<string, any>(), event, next),
+              state,
+            )
+          }
+          break
+        case 'SessionEndedRequest': // Special case - can't respond.
+          if (routes.SessionEnded !== undefined) {
+            return routes.SessionEnded()
+          }
+          return
+        case 'IntentRequest':
+          const intentRequest = event.request as Types.IntentRequest
+          const slots = slotsToMap(intentRequest.intent.slots)
 
-  catch: (onError): Pipe => (request, next) =>
-    PromiseOrValue.catch(() => next(request), onError),
+          const standardHandler = standardIntents.get(intentRequest.intent.name)
+          if (standardHandler !== undefined) {
+            return mapIntentResult(
+              standardHandler(state, slots, event, next),
+              state,
+            )
+          }
 
-  tracer: (logger?: (message: string, obj: any) => void): Pipe => {
+          const customHandler = customIntents.get(intentRequest.intent.name)
+          if (customHandler !== undefined) {
+            return mapIntentResult(
+              customHandler(state, slots, event, next),
+              state,
+            )
+          }
+      }
+
+      return next(event)
+    }
+  }
+
+  /** Catch and handle errors from subsequent handlers. */
+  export const catchErr = (onError: ((error: any) => any)): Pipe => (
+    request,
+    next,
+  ) => PromiseOrValue.catchErr(() => next(request), onError)
+
+  /** Log the incoming request and the response or error thrown by the subsequent handlers. */
+  export const tracer = (
+    logger?: (message: string, obj: any) => void,
+  ): Pipe => {
     const log =
       logger !== undefined
         ? logger
@@ -492,9 +453,10 @@ export const Pipe: PipeModule = {
         throw error
       }
     }
-  },
+  }
 
-  doNothing: (): Pipe => (event, next) => next(event),
+  /** Just call the next step in the pipe. */
+  export const doNothing = (): Pipe => (event, next) => next(event)
 }
 
 /** Functions for creating an Alexa handler */
@@ -510,7 +472,7 @@ export interface HandlerModule {
 export const Handler: HandlerModule = {
   middleware: Pipe.toHandler,
   router: <State>(routes: Routes<State>): Handler =>
-    Pipe.toHandler(router(routes)),
+    Pipe.toHandler(Pipe.router(routes)),
   pipe: (steps: Pipe[]): Handler => Pipe.toHandler(Pipe.join(steps)),
 }
 
@@ -527,19 +489,14 @@ const lambdaFromHandler = (handler: Handler): Types.AlexaLambda => (
 }
 
 /** Functions for creating an AWS lambda handler */
-export interface LambdaModule {
+export namespace Lambda {
   /** Create a lambda handler from an Alexa Handler */
-  handler: (handler: Handler) => Types.AlexaLambda
-  /** Create a lambda handler from request & intent routes */
-  router: <State>(routes: Routes<State>) => Types.AlexaLambda
-  /** Create a lambda handler from a middleware pipeline */
-  pipe: (steps: Pipe[]) => Types.AlexaLambda
-}
+  export const handler = lambdaFromHandler
 
-/** Functions for creating an AWS lambda handler */
-export const Lambda: LambdaModule = {
-  handler: lambdaFromHandler,
-  router: <State>(routes: Routes<State>) =>
-    lambdaFromHandler(Handler.router(routes)),
-  pipe: (steps: Pipe[]) => lambdaFromHandler(Handler.pipe(steps)),
+  /** Create a lambda handler from request & intent routes */
+  export const router = <State>(routes: Routes<State>) =>
+    lambdaFromHandler(Handler.router(routes))
+
+  /** Create a lambda handler from a middleware pipeline */
+  export const pipe = (steps: Pipe[]) => lambdaFromHandler(Handler.pipe(steps))
 }
