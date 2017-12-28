@@ -1,4 +1,13 @@
 language: node_js
 node_js:
-  - "node"
-  - "6.10"
+- node
+- '6.10'
+
+deploy:
+  provider: npm
+  email: daniel@danielbradley.net
+  api_key:
+    secure: GGZcAJ5aBbwIujgoCFQ4Wb/vpxYcGIOVwif17eV5gf/f8ZEkIIZYd76aZ4yQRHUWo0TtNnz6Z8YdrfQYz6YXp/rvGDWDZfMRnOwrOEpGOH6GluKuY0+rZbApIvi7NlMjO10fB7vjOcUyYt2Lk/+MsgzVoa7Rp0vGig4vnC7uIgSAIsJYueEPR/HrFgmrIzEiRzlS3ps73DmNT9nBXWBTm9S9C+rwiJQ6PZi+5XpzyRxacvBypMimk7FURGFsDfuPqv6IdNwc6UpAiju+0dgpJvNLsSUWCoy30oURFydCOaxlHjL2IXpjL4j+GZWKnL2mGT5wB65QWlITXF4ChVvb66UpB6q9SwnGsG7AAwwg58xq5IF4O6xPy+QDUylcyk+pE9Yype1nnIyHKcyy880+sxqtWmpDRX9dOZJSZfOxnzZvWSl/aPgvmOzgYwF9eN0O6l3J2fOwkwbUBuSzNXa8X5mS8AAE0423SZbpqwnDRPTU6ovT0K+GEn9VZubEbRbrsWEBF9DVbNk6mera4SyTnZy5x/DTKoR87szjmKlkxfvYq6vHPGrwpdw0/qXKdLRadZY/560Smzr5HW4cBShobMofN+owi4F13ntJa0NHH1dFUUl5+d1tRywhTUB92BQmJdiGpB/p+7kAi7AYaBGDiy+LTGE5ziJwusaWSBPFoYw=
+  on:
+    tags: true
+    repo: o2Labs/alexa-ts
