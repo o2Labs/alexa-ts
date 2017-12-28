@@ -11,3 +11,4 @@ deploy:
   on:
     tags: true
     repo: o2Labs/alexa-ts
+  skip_cleanup: true

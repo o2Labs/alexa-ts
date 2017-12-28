@@ -1,4 +1,4 @@
-A lightweight framework for building Alexa skills.
+A lightweight framework for building Alexa skills. [![Build Status](https://travis-ci.org/o2Labs/alexa-ts.svg?branch=master)](https://travis-ci.org/o2Labs/alexa-ts)
 
 ## Hello World
 
@@ -31,8 +31,8 @@ export const handler = Alexa.Lambda.pipe([
 
 ## More Examples
 
-- [The kitchen sink](examples/kitchen-sink.ts) - Shows off lots of the available features. ([JS version](examples/kitchen-sink.js))
-- [Guessing game](examples/guessing-game.ts) - demonstrates managing complex state. ([JS version](examples/guessing-game.js))
+- [The kitchen sink](examples/kitchen-sink.ts) - Shows off lots of the available features.
+- [Guessing game](examples/guessing-game.ts) - demonstrates managing complex state.
 - [Testing sessions](examples/testing.ts) - shows how to use the test helpers to test complex stories through a skill.
 
 ## Features

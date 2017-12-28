@@ -23,6 +23,14 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "LICENCE.txt",
+    "CHANGELOG.md",
+    "package.json"
+  ],
   "license": "MIT",
   "scripts": {
     "format": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts'",
