@@ -65,3 +65,4 @@ typings/
 
 # Custom ignores
 dist/
+.DS_Store
