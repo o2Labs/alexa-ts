@@ -2,15 +2,14 @@ import * as Alexa from '../src/index'
 import { Session } from '../src/testing'
 
 describe('counting skill', () => {
-
   const handler = Alexa.Lambda.router({
     InitialState: 0,
     Standard: {
-      Next: (state) : Alexa.Response<number> => ({
+      Next: (state): Alexa.Response<number> => ({
         Say: { Text: `${state}` },
         NewState: state + 1,
-      })
-    }
+      }),
+    },
   })
 
   it('keeps counting up each time you say "next"', () => {
@@ -19,17 +18,13 @@ describe('counting skill', () => {
 
     return session
       .RequestIntent('AMAZON.NextIntent')
-      .then((response) => {
-
+      .then(response => {
         // Perform another intent within the same session.
         return session.RequestIntent('AMAZON.NextIntent')
-
-      }).then((response) =>
-
+      })
+      .then(response =>
         // Session state is maintained.
-        expect(response.sessionAttributes['_alexaTsState']).toEqual(2)
-
+        expect(response.sessionAttributes['_alexaTsState']).toEqual(2),
       )
   })
-
 })
