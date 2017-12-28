@@ -5,28 +5,34 @@ import * as Types from './json-types'
  */
 export const Fake = Object.freeze({
   timestamp: () => new Date().toISOString(),
-  userId: () => "amzn1.ask.account.FAKEACCOUNTID",
-  requestId: () => "amzn1.echo-api.request.d15314a4-3a86-4d5a-90b0-5adb6a5b5ce7",
-  sessionId: () => "amzn1.echo-api.session.bcea274f-0dd8-43ac-8369-e102f881b42e",
-  applicationId: () => "amzn1.ask.skill.659a0b41-d887-45b0-a158-01b3d2214d5a",
+  userId: () => 'amzn1.ask.account.FAKEACCOUNTID',
+  requestId: () =>
+    'amzn1.echo-api.request.d15314a4-3a86-4d5a-90b0-5adb6a5b5ce7',
+  sessionId: () =>
+    'amzn1.echo-api.session.bcea274f-0dd8-43ac-8369-e102f881b42e',
+  applicationId: () => 'amzn1.ask.skill.659a0b41-d887-45b0-a158-01b3d2214d5a',
 
   /**
    * Create a version 1.0 Alexa request
    */
-  requestBody: (session: Types.Session, request: Types.Request, context: Types.RequestContext) : Types.RequestBody => ({
+  requestBody: (
+    session: Types.Session,
+    request: Types.Request,
+    context: Types.RequestContext,
+  ): Types.RequestBody => ({
     version: '1.0',
     session: session,
     request: request,
     context: context,
   }),
 
-  launchRequest: () : Types.LaunchRequest => ({
+  launchRequest: (): Types.LaunchRequest => ({
     type: 'LaunchRequest',
     requestId: Fake.requestId(),
     timeStamp: Fake.timestamp(),
   }),
 
-  intentRequest: (intent: string, slots?) : Types.IntentRequest => ({
+  intentRequest: (intent: string, slots?: any): Types.IntentRequest => ({
     type: 'IntentRequest',
     requestId: Fake.requestId(),
     timeStamp: Fake.timestamp(),
@@ -36,14 +42,16 @@ export const Fake = Object.freeze({
     },
   }),
 
-  sessionEnded: (reason?: Types.SessionEndedReason) : Types.SessionEndedRequest => ({
+  sessionEnded: (
+    reason?: Types.SessionEndedReason,
+  ): Types.SessionEndedRequest => ({
     type: 'SessionEndedRequest',
     reason: reason || 'USER_INITIATED',
     requestId: Fake.requestId(),
     timeStamp: Fake.timestamp(),
   }),
 
-  session: () : Types.Session => ({
+  session: (): Types.Session => ({
     sessionId: Fake.sessionId(),
     application: {
       applicationId: Fake.applicationId(),
@@ -51,14 +59,13 @@ export const Fake = Object.freeze({
     attributes: {},
     user: {
       userId: Fake.userId(),
-      accessToken: null,
     },
     new: true,
   }),
 
-  requestContext: () : Types.RequestContext => ({
+  requestContext: (): Types.RequestContext => ({
     AudioPlayer: {
-      playerActivity: 'IDLE'
+      playerActivity: 'IDLE',
     },
     System: {
       apiEndpoint: 'https://api.amazonalexa.com',
@@ -66,19 +73,19 @@ export const Fake = Object.freeze({
         applicationId: Fake.applicationId(),
       },
       device: {
-        deviceId: "string",
+        deviceId: 'string',
         supportedInterfaces: {
-          AudioPlayer: {}
+          AudioPlayer: {},
         },
       },
       user: {
         userId: Fake.userId(),
-        accessToken: null,
-      }
+        accessToken: undefined,
+      },
     },
   }),
 
-  lambdaContext: () : Types.Context => ({
+  lambdaContext: (): Types.Context => ({
     awsRequestId: 'e0aa9f2d-5f4a-4ae8-a7b9-bb1a79ed91f6',
     functionName: 'test-function',
     callbackWaitsForEmptyEventLoop: true,
@@ -90,34 +97,40 @@ export const Fake = Object.freeze({
   }),
 })
 
-type ExecuteRequest = (request: Types.RequestBody) => Promise<Types.ResponseBody>
+type ExecuteRequest = (
+  request: Types.RequestBody,
+) => Promise<Types.ResponseBody>
 
-export const configure =
-  (handler: Types.AlexaLambda, lambdaContext?: Types.Context) : ExecuteRequest => {
-    if (typeof lambdaContext === 'undefined') {
-      lambdaContext = Fake.lambdaContext()
-    }
+export const configure = (
+  handler: Types.AlexaLambda,
+  lambdaContext?: Types.Context,
+): ExecuteRequest => {
+  const lambdaContextOrDefault =
+    typeof lambdaContext === 'undefined' ? Fake.lambdaContext() : lambdaContext
 
-    return request =>
-      new Promise((resolve, reject) =>
-        handler(request, lambdaContext, (err, res) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(res)
-          }
-        }))
-  }
-
-export interface Builders {
-  LaunchRequest?: () => Types.LaunchRequest
-  IntentRequest?: (name: string, slots?) => Types.IntentRequest
-  SessionEndedRequest?: (reason?: Types.SessionEndedReason) => Types.SessionEndedRequest
-  Session?: () => Types.Session
-  Context?: () => Types.RequestContext
+  return request =>
+    new Promise((resolve, reject) =>
+      handler(request, lambdaContextOrDefault, (err, res) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(res)
+        }
+      }),
+    )
 }
 
-const defaultBuilders = () : Builders => ({
+export interface Builders {
+  LaunchRequest: () => Types.LaunchRequest
+  IntentRequest: (name: string, slots?: any) => Types.IntentRequest
+  SessionEndedRequest: (
+    reason?: Types.SessionEndedReason,
+  ) => Types.SessionEndedRequest
+  Session: () => Types.Session
+  Context: () => Types.RequestContext
+}
+
+const defaultBuilders = (): Builders => ({
   LaunchRequest: Fake.launchRequest,
   IntentRequest: Fake.intentRequest,
   SessionEndedRequest: Fake.sessionEnded,
@@ -125,7 +138,7 @@ const defaultBuilders = () : Builders => ({
   Context: Fake.requestContext,
 })
 
-const extendBuilders = (custom?: Builders) => {
+const extendBuilders = (custom?: Partial<Builders>): Builders => {
   const builders = defaultBuilders()
   if (typeof custom === 'undefined') {
     return builders
@@ -152,7 +165,7 @@ export class Session {
    * @param lambda Alexa lambda function to test.
    * @param builders Optional custom builders to be used.
    */
-  constructor (lambda: Types.AlexaLambda, builders?: Builders) {
+  constructor(lambda: Types.AlexaLambda, builders?: Partial<Builders>) {
     this.execute = configure(lambda)
     this.builders = extendBuilders(builders)
     this.session = this.builders.Session()
@@ -160,27 +173,49 @@ export class Session {
     this.context.System.user = this.session.user
   }
 
-  LinkAccount (accessToken: string) {
+  LinkAccount(accessToken: string) {
     this.session.user.accessToken = accessToken
     return this
   }
 
-  LaunchSkill () {
-    return this.Request(Fake.requestBody(this.session, this.builders.LaunchRequest(), this.context))
+  LaunchSkill() {
+    return this.Request(
+      Fake.requestBody(
+        this.session,
+        this.builders.LaunchRequest(),
+        this.context,
+      ),
+    )
   }
 
-  RequestIntent (name: string, slots?) {
-    return this.Request(Fake.requestBody(this.session, this.builders.IntentRequest(name, slots), this.context))
+  RequestIntent(name: string, slots?: any) {
+    return this.Request(
+      Fake.requestBody(
+        this.session,
+        this.builders.IntentRequest(name, slots),
+        this.context,
+      ),
+    )
   }
 
-  EndSession (reason?: Types.SessionEndedReason) {
-    return this.Request(Fake.requestBody(this.session, this.builders.SessionEndedRequest(reason), this.context))
+  EndSession(reason?: Types.SessionEndedReason) {
+    return this.Request(
+      Fake.requestBody(
+        this.session,
+        this.builders.SessionEndedRequest(reason),
+        this.context,
+      ),
+    )
   }
 
-  Request (request: Types.RequestBody) {
+  Request(request: Types.RequestBody) {
     return this.execute(request).then(response => {
       this.session.new = false
-      if (response && response.sessionAttributes && Object.getOwnPropertyNames(response.sessionAttributes).length > 0) {
+      if (
+        response &&
+        response.sessionAttributes &&
+        Object.getOwnPropertyNames(response.sessionAttributes).length > 0
+      ) {
         this.session.attributes = response.sessionAttributes
       }
       return response

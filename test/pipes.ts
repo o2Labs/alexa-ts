@@ -1,10 +1,9 @@
-// import 'mocha'
 import * as Alexa from '../src/index'
-import { assert } from 'chai'
 import { Session } from '../src/testing'
+import { ResponseBody } from '../src/json-types'
 
 describe('Creating pipes', () => {
-  const expectedResult = {
+  const expectedResult: ResponseBody = {
     version: '1.0',
     response: {
       outputSpeech: {
@@ -25,7 +24,7 @@ describe('Creating pipes', () => {
         (event) => Alexa.response({ Say: { Text: 'Expected' } }, 'ExpectedState'),
       ]))
     .LaunchSkill().then((response) => {
-      assert.deepEqual(response, expectedResult)
+      expect(response).toEqual(expectedResult)
     })
   )
 
@@ -37,7 +36,7 @@ describe('Creating pipes', () => {
       ]))
     .LaunchSkill()
     .then((response) => {
-      assert.deepEqual(response, expectedResult)
+      expect(response).toEqual(expectedResult)
     })
   )
 
@@ -49,8 +48,8 @@ describe('Creating pipes', () => {
       ]))
     .LaunchSkill()
     .then((response) =>
-      assert.deepEqual(response, expectedResult)
-    )
+      expect(response).toEqual(expectedResult)
+  )
   )
 
   it('throws an error when unhandled', (done) => {
@@ -62,8 +61,8 @@ describe('Creating pipes', () => {
     .then((response) => done(new Error('No error thrown')))
     .catch((err) => {
       try {
-        assert.instanceOf(err, Error)
-        assert.equal(err.message, 'Event unhandled')
+        expect(err).toBeInstanceOf(Error)
+        expect(err.message).toEqual('Event unhandled')
         done()
       } catch (fail) {
         done(fail)
@@ -76,8 +75,8 @@ describe('Creating pipes', () => {
 describe('Logging pipe', () => {
 
   it('logs request and response', () => {
-    const logs = []
-    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const logs: { message: string, obj: any }[] = []
+    const logger = (message: string, obj: any) => { logs.push({ message, obj }) }
     const routes = {
       InitialState: null,
       Launch: () => ({
@@ -91,13 +90,13 @@ describe('Logging pipe', () => {
       ]))
       .LaunchSkill()
       .then(() =>
-        assert.deepEqual(logs.map(log => log.message), [ 'Request:', 'Response:' ])
+        expect(logs.map(log => log.message)).toEqual([ 'Request:', 'Response:' ])
       )
   })
 
   it('logs errors', () => {
-    const logs = []
-    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const logs: { message: string, obj: any }[] = []
+    const logger = (message: string, obj: any) => { logs.push({ message, obj }) }
     return new Session(Alexa.Lambda.pipe([
       Alexa.Pipe.tracer(logger),
       () => { throw new Error('Expected error') }
@@ -106,14 +105,14 @@ describe('Logging pipe', () => {
       .then(() => { throw new Error('No exception raised') })
       .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
-        assert.isDefined(errorLog, 'Should find log with message "Error:"')
-        assert.equal(errorLog.obj, 'Error: Expected error')
+        if (!errorLog) { throw new Error('Should find log with message "Error:"') }
+        expect(errorLog.obj).toEqual('Error: Expected error')
       })
   })
 
   it('logs errors from promises', () => {
-    const logs = []
-    const logger = (message, obj) => { logs.push({ message, obj }) }
+    const logs: { message: string, obj: any }[] = []
+    const logger = (message: string, obj: any) => { logs.push({ message, obj }) }
     return new Session(Alexa.Lambda.pipe([
       Alexa.Pipe.tracer(logger),
       () => Promise.reject(new Error('Expected error')),
@@ -122,8 +121,8 @@ describe('Logging pipe', () => {
       .then(() => { throw new Error('No exception raised') })
       .catch(() => {
         const errorLog = logs.find(log => log.message === 'Error:')
-        assert.isDefined(errorLog, 'Should find log with message "Error:"')
-        assert.equal(errorLog.obj, 'Error: Expected error')
+        if (!errorLog) { throw new Error('Should find log with message "Error:"') }
+        expect(errorLog.obj).toEqual('Error: Expected error')
       })
   })
 

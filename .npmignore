@@ -2,6 +2,7 @@
 .gitignore
 .vscode
 .editorconfig
+.prettierrc.yaml
 *.json
 src/
 test/

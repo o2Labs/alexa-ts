@@ -1,6 +1,4 @@
-// import 'mocha'
 import * as Alexa from '../src/index'
-import { assert } from 'chai'
 import { Session } from '../src/testing'
 
 describe('Routing', () => {
@@ -16,7 +14,7 @@ describe('Routing', () => {
       }))
       .LaunchSkill()
       .then((response) => {
-        assert.deepEqual(response, {
+        expect(response).toEqual({
           version: '1.0',
           response: {
             outputSpeech: {
@@ -41,7 +39,7 @@ describe('Routing', () => {
       }))
       .LaunchSkill()
       .then((response) => {
-        assert.deepEqual(response, {
+        expect(response).toEqual({
           version: '1.0',
           response: {
             outputSpeech: {
@@ -67,7 +65,7 @@ describe('Routing', () => {
       }))
       .LaunchSkill()
       .then((response) => {
-        assert.deepEqual(response, {
+        expect(response).toEqual({
           version: '1.0',
           response: {
             outputSpeech: {
@@ -99,7 +97,7 @@ describe('Routing', () => {
       }))
       .RequestIntent('AMAZON.HelpIntent')
       .then((response) => {
-        assert.deepEqual(response, {
+        expect(response).toEqual({
           version: '1.0',
           response: {
             outputSpeech: {
@@ -134,7 +132,7 @@ describe('Routing', () => {
         }
       })
       .then((response) => {
-        assert.deepEqual(response, {
+        expect(response).toEqual({
           version: '1.0',
           response: {
             outputSpeech: {
@@ -173,7 +171,7 @@ describe('Routing', () => {
       startSession()
       .LaunchSkill()
       .then((result) => {
-        assert.deepEqual(result.response, {
+        expect(result.response).toEqual({
           "outputSpeech": {
             "type": "PlainText",
             "text": "Please log in"
@@ -191,7 +189,7 @@ describe('Routing', () => {
       .LinkAccount('SomeAccessToken')
       .LaunchSkill()
       .then((result) => {
-        assert.deepEqual(result.response, {
+        expect(result.response).toEqual({
           "outputSpeech": {
             "type": "PlainText",
             "text": "Logged in"
@@ -218,7 +216,7 @@ describe('Routing', () => {
     ]))
     .LaunchSkill()
     .then((result) => {
-      assert.deepEqual(result.response, {
+      expect(result.response).toEqual({
         "outputSpeech": {
           "type": "PlainText",
           "text": "Fall-through"
@@ -235,7 +233,7 @@ describe('Routing', () => {
       }),
       () => { throw new Error('Unhandled') },
     ])).EndSession().then(resp => {
-      assert.isUndefined(resp)
+      expect(resp).toBeUndefined()
     })
   )
 

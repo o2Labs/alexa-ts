@@ -21,26 +21,39 @@
   "engines": {
     "node": ">=4.3.2"
   },
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "test": "gulp test",
-    "prepublish": "gulp build"
+    "format": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts'",
+    "clean": "rm -rf dist",
+    "test": "jest && tsc --noEmit",
+    "build": "yarn clean && tsc -p src/tsconfig.json",
+    "prepare": "yarn format && yarn test && yarn build"
+  },
+  "dependencies": {
+    "@types/node": "^8.5.1"
   },
   "devDependencies": {
-    "@types/chai": "~3.4.35",
-    "@types/mocha": "^2.2.39",
-    "chai": "~3.5.0",
-    "del": "^2.2.2",
-    "gulp": "~3.9.1",
-    "gulp-mocha": "^4.0.1",
-    "gulp-tslint": "^7.1.0",
-    "gulp-typescript": "^3.1.5",
-    "mocha": "~3.2.0",
+    "@types/jest": "^21.1.9",
+    "jest": "^22.0.4",
+    "prettier": "^1.9.2",
+    "ts-jest": "^22.0.0",
     "ts-node": "^2.1.0",
-    "tslint": "^4.4.2",
-    "tslint-config-standard": "^4.0.0",
-    "typescript": "~2.1.6"
+    "typescript": "^2.6.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "test/.*\\.ts",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }
