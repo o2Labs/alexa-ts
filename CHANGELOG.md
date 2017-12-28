@@ -1,3 +1,9 @@
+# v3.0.0-beta
+- Upgrade to TypeScript 2.6.
+- Remove implicit 'any'.
+- Fix where generic types were being used as argument names.
+- Use strict checks between null and undefined.
+
 # v2.5.0
 - Add request context object to request body.
 
