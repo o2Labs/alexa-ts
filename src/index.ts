@@ -483,7 +483,17 @@ const lambdaFromHandler = (handler: Handler): Types.AlexaLambda => (
 ) => {
   PromiseOrValue.then(
     () => handler(event),
-    data => callback(null, data),
+    data => {
+      if (
+        event &&
+        event.request &&
+        event.request.type === 'SessionEndedRequest'
+      ) {
+        callback(null)
+      } else {
+        callback(null, data)
+      }
+    },
     callback,
   )
 }
