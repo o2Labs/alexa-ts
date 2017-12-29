@@ -1,8 +1,9 @@
-# v3.0.0-beta
+# v3.0.0
 - Upgrade to TypeScript 2.6.
 - Remove implicit 'any'.
 - Fix where generic types were being used as argument names.
 - Use strict checks between null and undefined.
+- Renamed Pipe and PromiseOrValue `catch` functions to `catchErr` to avoid clash with JS keyword.
 
 # v2.5.0
 - Add request context object to request body.

@@ -21,10 +21,12 @@
   "engines": {
     "node": ">=4.3.2"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "files": [
-    "dist",
+    "*.js",
+    "*.d.ts",
+    "*.js.map",
     "examples",
     "README.md",
     "LICENCE.txt",
@@ -34,7 +36,7 @@
   "license": "MIT",
   "scripts": {
     "format": "prettier --write --config .prettierrc.yaml '{src,tests}/**/*.ts'",
-    "clean": "rm -rf dist",
+    "clean": "rm -f *.d.ts *.js *.js.map",
     "test": "jest && tsc --noEmit",
     "build": "yarn clean && tsc -p src/tsconfig.json",
     "prepare": "yarn format && yarn test && yarn build"

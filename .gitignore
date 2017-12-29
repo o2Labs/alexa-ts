@@ -64,5 +64,7 @@ typings/
 # End of https://www.gitignore.io/api/node
 
 # Custom ignores
-dist/
 .DS_Store
+*.d.ts
+*.js
+*.js.map
