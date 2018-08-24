@@ -24,7 +24,7 @@ describe('counting skill', () => {
       })
       .then(response =>
         // Session state is maintained.
-        expect(response.sessionAttributes['_alexaTsState']).toEqual(2),
+        expect(response.sessionAttributes).toHaveProperty('_alexaTsState', 2),
       )
   })
 })

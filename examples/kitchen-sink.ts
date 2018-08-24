@@ -40,7 +40,7 @@ const routes: Alexa.Routes<State> = {
 
 const auth: Alexa.Pipe = (event, next) => {
   // Define custom middleware for things like account linking
-  if (event.session.user.accessToken) {
+  if (event.session && event.session.user.accessToken) {
     // TODO: Perform custom authorisation
     return next(event)
   } else {

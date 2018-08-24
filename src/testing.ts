@@ -1,10 +1,12 @@
-import * as Types from './json-types'
+import * as ask from 'ask-sdk-model'
+import { Context, AlexaLambda } from './json-types'
 
 /**
  * Helpers to create various fake things for Alexa requests.
  */
 export const Fake = Object.freeze({
   timestamp: () => new Date().toISOString(),
+  locale: () => 'en-GB',
   userId: () => 'amzn1.ask.account.FAKEACCOUNTID',
   requestId: () =>
     'amzn1.echo-api.request.d15314a4-3a86-4d5a-90b0-5adb6a5b5ce7',
@@ -16,42 +18,45 @@ export const Fake = Object.freeze({
    * Create a version 1.0 Alexa request
    */
   requestBody: (
-    session: Types.Session,
-    request: Types.Request,
-    context: Types.RequestContext,
-  ): Types.RequestBody => ({
+    session: ask.Session,
+    request: ask.Request,
+    context: ask.Context,
+  ): ask.RequestEnvelope => ({
     version: '1.0',
     session: session,
     request: request,
     context: context,
   }),
 
-  launchRequest: (): Types.LaunchRequest => ({
+  launchRequest: (): ask.LaunchRequest => ({
     type: 'LaunchRequest',
     requestId: Fake.requestId(),
-    timeStamp: Fake.timestamp(),
+    timestamp: Fake.timestamp(),
+    locale: Fake.locale(),
   }),
 
-  intentRequest: (intent: string, slots?: any): Types.IntentRequest => ({
+  intentRequest: (intent: string, slots?: any): ask.IntentRequest => ({
     type: 'IntentRequest',
     requestId: Fake.requestId(),
-    timeStamp: Fake.timestamp(),
+    timestamp: Fake.timestamp(),
+    dialogState: 'COMPLETED',
+    locale: Fake.locale(),
     intent: {
       name: intent,
       slots: slots || {},
+      confirmationStatus: 'NONE',
     },
   }),
 
-  sessionEnded: (
-    reason?: Types.SessionEndedReason,
-  ): Types.SessionEndedRequest => ({
+  sessionEnded: (reason?: ask.SessionEndedReason): ask.SessionEndedRequest => ({
     type: 'SessionEndedRequest',
     reason: reason || 'USER_INITIATED',
     requestId: Fake.requestId(),
-    timeStamp: Fake.timestamp(),
+    timestamp: Fake.timestamp(),
+    locale: Fake.locale(),
   }),
 
-  session: (): Types.Session => ({
+  session: (): ask.Session => ({
     sessionId: Fake.sessionId(),
     application: {
       applicationId: Fake.applicationId(),
@@ -63,7 +68,7 @@ export const Fake = Object.freeze({
     new: true,
   }),
 
-  requestContext: (): Types.RequestContext => ({
+  requestContext: (): ask.Context => ({
     AudioPlayer: {
       playerActivity: 'IDLE',
     },
@@ -85,7 +90,7 @@ export const Fake = Object.freeze({
     },
   }),
 
-  lambdaContext: (): Types.Context => ({
+  lambdaContext: (): Context => ({
     awsRequestId: 'e0aa9f2d-5f4a-4ae8-a7b9-bb1a79ed91f6',
     functionName: 'test-function',
     callbackWaitsForEmptyEventLoop: true,
@@ -98,12 +103,12 @@ export const Fake = Object.freeze({
 })
 
 type ExecuteRequest = (
-  request: Types.RequestBody,
-) => Promise<Types.ResponseBody>
+  request: ask.RequestEnvelope,
+) => Promise<ask.ResponseEnvelope>
 
 export const configure = (
-  handler: Types.AlexaLambda,
-  lambdaContext?: Types.Context,
+  handler: AlexaLambda,
+  lambdaContext?: Context,
 ): ExecuteRequest => {
   const lambdaContextOrDefault =
     typeof lambdaContext === 'undefined' ? Fake.lambdaContext() : lambdaContext
@@ -121,13 +126,13 @@ export const configure = (
 }
 
 export interface Builders {
-  LaunchRequest: () => Types.LaunchRequest
-  IntentRequest: (name: string, slots?: any) => Types.IntentRequest
+  LaunchRequest: () => ask.LaunchRequest
+  IntentRequest: (name: string, slots?: any) => ask.IntentRequest
   SessionEndedRequest: (
-    reason?: Types.SessionEndedReason,
-  ) => Types.SessionEndedRequest
-  Session: () => Types.Session
-  Context: () => Types.RequestContext
+    reason?: ask.SessionEndedReason,
+  ) => ask.SessionEndedRequest
+  Session: () => ask.Session
+  Context: () => ask.Context
 }
 
 const defaultBuilders = (): Builders => ({
@@ -156,16 +161,16 @@ const extendBuilders = (custom?: Partial<Builders>): Builders => {
  */
 export class Session {
   private execute: ExecuteRequest
-  private session: Types.Session
+  private session: ask.Session
   private builders: Builders
-  private context: Types.RequestContext
+  private context: ask.Context
 
   /**
    * Start a new session
    * @param lambda Alexa lambda function to test.
    * @param builders Optional custom builders to be used.
    */
-  constructor(lambda: Types.AlexaLambda, builders?: Partial<Builders>) {
+  constructor(lambda: AlexaLambda, builders?: Partial<Builders>) {
     this.execute = configure(lambda)
     this.builders = extendBuilders(builders)
     this.session = this.builders.Session()
@@ -198,7 +203,7 @@ export class Session {
     )
   }
 
-  EndSession(reason?: Types.SessionEndedReason) {
+  EndSession(reason?: ask.SessionEndedReason) {
     return this.Request(
       Fake.requestBody(
         this.session,
@@ -208,7 +213,7 @@ export class Session {
     )
   }
 
-  Request(request: Types.RequestBody) {
+  Request(request: ask.RequestEnvelope) {
     return this.execute(request).then(response => {
       this.session.new = false
       if (

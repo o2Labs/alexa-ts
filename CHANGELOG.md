@@ -1,3 +1,7 @@
+# v4.0.0
+- Use official type definitions from ask-sdk-model.
+  - ResponseEnvelope `sessionAttributes` and RequestEnvelope `session` are now marked as optional.
+
 # v3.0.0
 - Upgrade to TypeScript 2.6.
 - Remove implicit 'any'.

@@ -159,7 +159,7 @@ describe('Routing', () => {
         Alexa.Lambda.router({
           InitialState: '',
           Launch: (state, slots, request) => {
-            if (request.session.user.accessToken) {
+            if (request.session && request.session.user.accessToken) {
               return {
                 Say: { Text: 'Logged in' },
               }

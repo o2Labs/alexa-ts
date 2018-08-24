@@ -1,4 +1,5 @@
-import * as Types from './json-types'
+import * as ask from 'ask-sdk-model'
+import { AlexaLambda } from './json-types'
 
 export type PromiseOrValue<T> = T | PromiseLike<T>
 
@@ -67,17 +68,17 @@ export namespace PromiseOrValue {
  * _Only in the special case of the `SessionEnded` request, the response should be void._
  */
 export type Handler = (
-  event: Types.RequestBody,
-) => PromiseOrValue<Types.ResponseBody | void>
+  event: ask.RequestEnvelope,
+) => PromiseOrValue<ask.ResponseEnvelope | void>
 
 /**
  * An Alexa Middleware `Pipe` is the same as the Alexa Handler with the addition of having the option of
  * calling the next step in the pipe.
  */
 export type Pipe = (
-  event: Types.RequestBody,
+  event: ask.RequestEnvelope,
   next: Handler,
-) => PromiseOrValue<Types.ResponseBody | void>
+) => PromiseOrValue<ask.ResponseEnvelope | void>
 
 /**
  * The words to be spoken.
@@ -131,7 +132,7 @@ export interface Response<State> {
 }
 
 export type HandlerResult<State> = PromiseOrValue<
-  Response<State> | Types.ResponseBody | void
+  Response<State> | ask.ResponseEnvelope | void
 >
 
 /**
@@ -144,7 +145,7 @@ export type Slots = Map<string, any>
 export type IntentHandler<State> = (
   sessionState: State,
   slots: Slots,
-  request: Types.RequestBody,
+  request: ask.RequestEnvelope,
   next: Handler,
 ) => HandlerResult<State>
 
@@ -194,7 +195,7 @@ export interface Routes<State> {
   Custom?: Iterable<[string, IntentHandler<State>]>
 }
 
-const makeSpeech = (speech: Speech): Types.OutputSpeech | undefined => {
+const makeSpeech = (speech: Speech): ask.ui.OutputSpeech | undefined => {
   if (typeof speech.SSML !== 'undefined') {
     return {
       type: 'SSML',
@@ -210,7 +211,7 @@ const makeSpeech = (speech: Speech): Types.OutputSpeech | undefined => {
   }
 }
 
-const makeCard = (card: Card): Types.Card => {
+const makeCard = (card: Card): ask.ui.Card => {
   if (card.Type === 'LinkAccount') {
     return {
       type: 'LinkAccount',
@@ -234,8 +235,8 @@ const makeCard = (card: Card): Types.Card => {
   }
 }
 
-const makeResponse = (response: Response<any>): Types.Response => {
-  const output: Types.Response = {
+const makeResponse = (response: Response<any>): ask.Response => {
+  const output: ask.Response = {
     shouldEndSession: response.EndSession || false,
   }
 
@@ -267,7 +268,7 @@ export namespace State {
 
   /** Get the state (if available) from the request, otherwise return the initial state. */
   export function fromRequest<State>(
-    request: Types.RequestBody,
+    request: ask.RequestEnvelope,
     initialState: State,
   ): State {
     if (
@@ -300,7 +301,7 @@ const sessionAttributesFromResponse = <State>(
 export const response = <State>(
   response: Response<State>,
   previousState?: State,
-): Types.ResponseBody => {
+): ask.ResponseEnvelope => {
   return {
     version: '1.0',
     response: makeResponse(response),
@@ -325,7 +326,7 @@ const slotsToMap = (slots: any): Slots => {
 }
 
 const buildRequestIfNeeded = <State>(
-  outputOrResponse: void | Response<State> | Types.ResponseBody,
+  outputOrResponse: void | Response<State> | ask.ResponseEnvelope,
   previousState: State,
 ) => {
   if (typeof outputOrResponse !== 'object') {
@@ -334,7 +335,7 @@ const buildRequestIfNeeded = <State>(
   if (outputOrResponse['Say'] !== undefined) {
     return response(outputOrResponse as Response<State>, previousState)
   } else {
-    return outputOrResponse as Types.ResponseBody
+    return outputOrResponse as ask.ResponseEnvelope
   }
 }
 
@@ -346,8 +347,8 @@ export namespace Pipe {
   /** Create a pipe by calling a series of child pipes. */
   export const join = (steps: Pipe[]): Pipe => (event, next) => {
     const processNext = (remainingHandlers: Pipe[]) => (
-      event: Types.RequestBody,
-    ): PromiseOrValue<Types.ResponseBody | void> => {
+      event: ask.RequestEnvelope,
+    ): PromiseOrValue<ask.ResponseEnvelope | void> => {
       if (remainingHandlers.length === 0) {
         if (typeof next !== 'undefined') {
           return next(event)
@@ -390,7 +391,7 @@ export namespace Pipe {
           }
           return
         case 'IntentRequest':
-          const intentRequest = event.request as Types.IntentRequest
+          const intentRequest = event.request as ask.IntentRequest
           const slots = slotsToMap(intentRequest.intent.slots)
 
           const standardHandler = standardIntents.get(intentRequest.intent.name)
@@ -434,7 +435,7 @@ export namespace Pipe {
       try {
         const result = next(event)
         if (isPromise(result)) {
-          return (result as PromiseLike<Types.ResponseBody>).then(
+          return (result as PromiseLike<ask.ResponseEnvelope>).then(
             response => {
               log('Response:', response)
               return response
@@ -476,7 +477,7 @@ export const Handler: HandlerModule = {
   pipe: (steps: Pipe[]): Handler => Pipe.toHandler(Pipe.join(steps)),
 }
 
-const lambdaFromHandler = (handler: Handler): Types.AlexaLambda => (
+const lambdaFromHandler = (handler: Handler): AlexaLambda => (
   event,
   context,
   callback,

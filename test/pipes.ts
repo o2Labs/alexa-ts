@@ -1,9 +1,9 @@
 import * as Alexa from '../src/index'
 import { Session } from '../src/testing'
-import { ResponseBody } from '../src/json-types'
+import * as ask from 'ask-sdk-model'
 
 describe('Creating pipes', () => {
-  const expectedResult: ResponseBody = {
+  const expectedResult: ask.ResponseEnvelope = {
     version: '1.0',
     response: {
       outputSpeech: {

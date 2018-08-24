@@ -18,11 +18,11 @@ describe('testing helpers', () => {
     return session
       .RequestIntent('AMAZON.NextIntent')
       .then(response => {
-        expect(response.sessionAttributes['_alexaTsState']).toEqual(1)
+        expect(response.sessionAttributes).toHaveProperty('_alexaTsState', 1)
         return session.RequestIntent('AMAZON.NextIntent')
       })
       .then(response => {
-        expect(response.sessionAttributes['_alexaTsState']).toEqual(2)
+        expect(response.sessionAttributes).toHaveProperty('_alexaTsState', 2)
         return session.RequestIntent('AMAZON.NextIntent')
       })
   })
