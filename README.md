@@ -1,3 +1,5 @@
+:warning: **This package has been deprecated and the code is not being maintained, please use `ask-sdk` instead** :warning:
+
 A lightweight framework for building Alexa skills. [![Build Status](https://travis-ci.org/o2Labs/alexa-ts.svg?branch=master)](https://travis-ci.org/o2Labs/alexa-ts)
 
 ## Hello World
